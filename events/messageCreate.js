@@ -1,30 +1,54 @@
-const { createErrorEmbed } = require('../embeds/errorEmbed');
-const { suffix } = require('../config.json')
+const { OpenAI } = require('openai');
+const  { config } = require('dotenv');
+
+config()
+
+const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY, 
+  });
+
+// Créer un objet pour stocker les conversations (clé : ID utilisateur)
+const conversations = {};
 
 module.exports = {
-    name: 'messageCreate',
-    execute(message) {
-      if (!message.content.startsWith(suffix) || message.author.bot) return;
-  
-      const args = message.content.slice(1).trim().split(/ +/);
-      const commandName = args.shift().toLowerCase();
+  name: 'messageCreate',
+  async execute(message) {
+    if (message.mentions.has(message.client.user) && !message.author.bot) {
+      const userId = message.author.id;
+      const userName = message.author.userName
+      const userMessage = message.content.replace(`<@${message.client.user.id}>`, '').trim();
 
-      if (!message.client.commands.has(commandName)) {
-        const errorEmbed = createErrorEmbed(`La commande !${commandName} n\'existe pas`);
-        return message.channel.send({ embeds: [errorEmbed] });
+      if (userMessage.length === 0) {
+        return message.reply('?');
       }
-  
-      const command = message.client.commands.get(commandName);
-  
-      if (!command) return;
-  
+
+      if (!conversations[userId]) {
+        conversations[userId] = [
+            { role: 'system', content: 'You are a very sarcastic and rude AI. You speak with a lot of humor, irony, and you don\'t hold back from using vulgar or familiar language. You often tease users with crude jokes, and you don\'t care about politeness, but always keep your responses short and to the point.' }
+        ];
+      }
+
+      conversations[userId].push({ role: 'user', content: `${userName} said: ${userMessage}` });
+
+      if (conversations[userId].length > 10) {
+        conversations[userId].shift();
+      }
+
       try {
-        command.execute(message, args);
+        const gptResponse = await client.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: conversations[userId],
+        });
+
+        const gptMessage = gptResponse.choices[0].message.content;
+
+        conversations[userId].push({ role: 'assistant', content: gptMessage });
+
+        await message.reply(gptMessage);
       } catch (error) {
-        console.error(error);
-        const errorEmbed = createErrorEmbed(`Il y a eu une erreur lors de l\'exécution de la commande !${commandName}`);
-        message.channel.send({ embeds: [errorEmbed] });
+        console.error('Erreur avec GPT :', error);
+        await message.reply('Je suis désolé, il y a eu une erreur en traitant ta demande.');
       }
-    },
-  };
-  
+    }
+  },
+};

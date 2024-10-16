@@ -1,10 +1,22 @@
+const { SlashCommandBuilder } = require('discord.js');
+const { createInfoEmbed } = require('../embeds/embedTemplates.js'); // Assurez-vous que cet import est correct
+
 module.exports = {
-    name: 'ping',
-    description: 'Affiche la latence du bot.',
-    async execute(message, args) {
-      const sentMessage = await message.channel.send('Calcul du ping...');    
-      const apiLatency = message.client.ws.ping; 
-      const messageLatency = sentMessage.createdTimestamp - message.createdTimestamp;
-      sentMessage.edit(`Message: \`${messageLatency}ms\`, API: \`${apiLatency}ms\``);
-    },
-  };
+  data: new SlashCommandBuilder()
+    .setName('ping')
+    .setDescription('Affiche la latence du bot.'),
+  async execute(interaction) {
+
+    const sentMessage = await interaction.reply({ content: 'Calcul du ping...', fetchReply: true });
+
+    const apiLatency = interaction.client.ws.ping;
+    const messageLatency = sentMessage.createdTimestamp - interaction.createdTimestamp;
+
+    const embed = createInfoEmbed(
+      'Latence du bot',
+      `Message : \`${messageLatency}ms\`\nAPI : \`${apiLatency}ms\``
+    );
+
+    await interaction.editReply({ content: '', embeds: [embed] });
+  },
+};
