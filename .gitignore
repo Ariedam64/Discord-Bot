@@ -1,0 +1,8 @@
+# Dossier node_modules à ignorer
+node_modules/
+
+# Ignorer les fichiers de logs
+*.log
+
+# Fichier config contenant des informations sensibles
+config.json
