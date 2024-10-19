@@ -22,6 +22,14 @@ function createInfoEmbed(title, description) {
     .setDescription(description || 'Voici une information importante.')
 }
 
+function createImageEmbed(title, description, imageUrl) {
+  return new EmbedBuilder()
+    .setColor(colors.info) 
+    .setTitle(title || 'Image générée')
+    .setDescription(description || 'Voici l\'image générée.')
+    .setImage(imageUrl);
+}
+
 function createWarningEmbed(title, description) {
   return new EmbedBuilder()
     .setColor(colors.warning)
@@ -33,5 +41,6 @@ module.exports = {
   createSuccessEmbed,
   createErrorEmbed,
   createInfoEmbed,
-  createWarningEmbed
+  createWarningEmbed,
+  createImageEmbed
 };

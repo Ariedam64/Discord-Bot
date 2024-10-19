@@ -2,11 +2,16 @@ const fs = require('fs');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 
+global.configData = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+global.botName = "Arie"
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildVoiceStates,
   ],
 });
 
@@ -45,5 +50,4 @@ client.on('interactionCreate', async interaction => {
     }
   });
 
-// Se connecter au bot
 client.login(token);

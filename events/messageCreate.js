@@ -1,53 +1,83 @@
 const { OpenAI } = require('openai');
-const  { config } = require('dotenv');
+const { config } = require('dotenv');
 
-config()
+config();
 
 const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, 
-  });
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-// Créer un objet pour stocker les conversations (clé : ID utilisateur)
-const conversations = {};
+global.messageHistory = [];
+global.currentContext = "agressif";
 
 module.exports = {
   name: 'messageCreate',
   async execute(message) {
+    const userId = message.author.id;
+    const userName = message.author.username;
+    var userMessage = message.content.trim();
+
+
+    if (message.mentions.users.size > 0) {
+      message.mentions.users.forEach((user) => {
+        userMessage = userMessage.replace(`<@${user.id}>`, `@${user.username}`);
+      });
+    }
+
+    if (message.embeds.length < 1) {
+      global.messageHistory.push({
+        user: userName,
+        content: userMessage,
+      });
+    }
+
+    if (global.messageHistory.length > 20) {
+      global.messageHistory.shift();
+    }
+
     if (message.mentions.has(message.client.user) && !message.author.bot) {
-      const userId = message.author.id;
-      const userName = message.author.userName
-      const userMessage = message.content.replace(`<@${message.client.user.id}>`, '').trim();
 
-      if (userMessage.length === 0) {
-        return message.reply('?');
-      }
-
-      if (!conversations[userId]) {
-        conversations[userId] = [
-            { role: 'system', content: 'You are a very sarcastic and rude AI. You speak with a lot of humor, irony, and you don\'t hold back from using vulgar or familiar language. You often tease users with crude jokes, and you don\'t care about politeness, but always keep your responses short and to the point.' }
-        ];
-      }
-
-      conversations[userId].push({ role: 'user', content: `${userName} said: ${userMessage}` });
-
-      if (conversations[userId].length > 10) {
-        conversations[userId].shift();
-      }
+      let historyContext = '';
+      global.messageHistory.forEach((msg) => {
+        historyContext += `${msg.user}: ${msg.content}\n`;
+      });
 
       try {
+        const historyMessages = messageHistory.map(msg => ({
+          role: msg.user === message.client.user.username ? 'assistant' : 'user',
+          content: msg.user === message.client.user.username ? msg.content : `${msg.user}: ${msg.content}`
+        }));
+
+        const contextMessages = global.configData.contexts[currentContext].messages;
+
         const gptResponse = await client.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: conversations[userId],
+          model: 'gpt-4o-mini',
+          messages: [
+            ...contextMessages,
+            ...historyMessages,
+            { role: 'user', content: userMessage }
+          ],
         });
 
         const gptMessage = gptResponse.choices[0].message.content;
 
-        conversations[userId].push({ role: 'assistant', content: gptMessage });
+        const maxMessageLength = 2000;
+        let messageParts = [];
 
-        await message.reply(gptMessage);
+        for (let i = 0; i < gptMessage.length; i += maxMessageLength) {
+          messageParts.push(gptMessage.slice(i, i + maxMessageLength));
+        }
+
+        for (const part of messageParts) {
+          await message.reply(part);
+        }
+
       } catch (error) {
-        console.error('Erreur avec GPT :', error);
-        await message.reply('Je suis désolé, il y a eu une erreur en traitant ta demande.');
+        if (error.code === 50013) {
+          console.error("Le bot n'a pas les permissions pour envoyer un message dans ce canal.");
+        } else {
+          console.error("Erreur avec GPT :", error);
+        }
       }
     }
   },
