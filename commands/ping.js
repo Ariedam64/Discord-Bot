@@ -21,6 +21,18 @@ module.exports = {
     let uptimeResponseTime = '';
     let averageResponseTime = '';
 
+    function formatElapsedTime(minutesElapsed) {
+      const days = Math.floor(minutesElapsed / 1440);
+      const hours = Math.floor((minutesElapsed % 1440) / 60);
+      const minutes = minutesElapsed % 60;
+
+      let result = '';
+      if (days > 0) result += `${days} jour(s) `;
+      if (hours > 0) result += `${hours} heure(s) `;
+      result += `${minutes} minute(s)`;
+      return result;
+    }
+
     try {
       const response = await axios({
         method: 'get',
@@ -73,8 +85,8 @@ module.exports = {
       const now = new Date();
       const minutesAgo = Math.floor((now - lastPingTime) / 60000);
 
-      uptimeStatus = `**Moniteur**: ${status} depuis ${duration} minutes`;
-      uptimeResponseTime = `Dernier ping: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)\nTemps de réponse moyen: \`${averageResponseTime}ms\``;
+      uptimeStatus = `**Moniteur**: ${status} (depuis ${formatElapsedTime(duration)})`;
+      uptimeResponseTime = `**Dernier ping**: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
 
     } catch (error) {
       console.error('Erreur avec l\'API UptimeRobot:', error);
