@@ -41,10 +41,16 @@ module.exports = {
       });
 
       try {
+        function cleanAssistantMessage(content) {
+          return content.replace(/^Arie: /, '');
+        }
+
         const historyMessages = messageHistory.map(msg => ({
           role: msg.user === message.client.user.username ? 'assistant' : 'user',
-          content: msg.user === message.client.user.username ? msg.content : `${msg.user}: ${msg.content}`
+          content: `${msg.user}: ${msg.content}`
         }));
+
+        console.log(historyMessages)
 
         const contextMessages = global.configData.contexts[currentContext].messages;
 
@@ -57,7 +63,7 @@ module.exports = {
           ],
         });
 
-        const gptMessage = gptResponse.choices[0].message.content;
+        const gptMessage = cleanAssistantMessage(gptResponse.choices[0].message.content);
 
         const maxMessageLength = 2000;
         let messageParts = [];
