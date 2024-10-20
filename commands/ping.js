@@ -27,8 +27,8 @@ module.exports = {
       const minutes = minutesElapsed % 60;
 
       let result = '';
-      if (days > 0) result += `${days} jours `;
-      if (hours > 0) result += `${hours}h `;
+      if (days > 0) result = `${days} jours `;
+      if (hours > 0) result += `${hours}h`;
       result += `${minutes}min`;
       return result;
     }
@@ -85,16 +85,17 @@ module.exports = {
       const now = new Date();
       const minutesAgo = Math.floor((now - lastPingTime) / 60000);
 
-      uptimeStatus = `*Moniteur*: ${status} (depuis ${formatElapsedTime(duration)})`;
-      uptimeResponseTime = `*Dernier ping*: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
+      uptimeStatus = `- Moniteur: ${status} (depuis ${formatElapsedTime(duration)})`;
+      uptimeResponseTime = `- Dernier ping: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
 
     } catch (error) {
       console.error('Erreur avec l\'API UptimeRobot:', error);
     }
+    console.log(lastPing)
 
     const embed = createInfoEmbed(
       'Statut du bot',
-      `**Statut Discord** \n*Latence du message:* \`${messageLatency}ms\`\n*Latence API:* \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
+      `**Statut Discord** \n- Latence du message: \`${messageLatency}ms\`\n- Latence API: \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
     );
 
     await interaction.editReply({ content: '', embeds: [embed] });
