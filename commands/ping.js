@@ -26,8 +26,24 @@ module.exports = {
           Accept: 'application/vnd.heroku+json; version=3'
         }
       });
-      const dynos = response.data.map(dyno => `${dyno.type}: ${dyno.state} (Started at: ${dyno.created_at})`).join('\n');
-      dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
+
+      const formatDate = (isoDate) => {
+        const date = new Date(isoDate);
+        return date.toLocaleString('fr-FR', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      };
+
+      const dynos = response.data.map(dyno => {
+        const formattedDate = formatDate(dyno.created_at);
+        const stateInUpperCase = dyno.state.toUpperCase();
+        return `**${dyno.type}**: ${stateInUpperCase} (Démarré le: ${formattedDate})`;
+      }).join('\n');
+      dynosInfo = `**Statut des dynos Heroku:**\n\n${dynos}`;
 
     } catch (error) {
       console.error('Erreur avec l\'API Heroku:', error);
