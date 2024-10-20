@@ -6,7 +6,7 @@ const client = new OpenAI({
 });
 
 global.messageHistory = [];
-global.currentContext = "professionnel";
+global.currentContext = "lambda_discord";
 
 module.exports = {
   name: 'messageCreate',
