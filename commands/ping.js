@@ -27,9 +27,9 @@ module.exports = {
       const minutes = minutesElapsed % 60;
 
       let result = '';
-      if (days > 0) result += `${days} jour(s) `;
-      if (hours > 0) result += `${hours} heure(s) `;
-      result += `${minutes} minute(s)`;
+      if (days > 0) result += `${days} jours `;
+      if (hours > 0) result += `${hours}h `;
+      result += `${minutes}min`;
       return result;
     }
 
@@ -57,7 +57,7 @@ module.exports = {
       const dynos = response.data.map(dyno => {
         const formattedDate = formatDate(dyno.created_at);
         const stateInUpperCase = dyno.state.toUpperCase();
-        return `**${dyno.type}**: ${stateInUpperCase} depuis le ${formattedDate}`;
+        return `*${dyno.type}*: ${stateInUpperCase} depuis le ${formattedDate}`;
       }).join('\n');
       dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
 
@@ -85,8 +85,8 @@ module.exports = {
       const now = new Date();
       const minutesAgo = Math.floor((now - lastPingTime) / 60000);
 
-      uptimeStatus = `**Moniteur**: ${status} (depuis ${formatElapsedTime(duration)})`;
-      uptimeResponseTime = `**Dernier ping**: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
+      uptimeStatus = `*Moniteur*: ${status} (depuis ${formatElapsedTime(duration)})`;
+      uptimeResponseTime = `*Dernier ping*: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
 
     } catch (error) {
       console.error('Erreur avec l\'API UptimeRobot:', error);
@@ -94,7 +94,7 @@ module.exports = {
 
     const embed = createInfoEmbed(
       'Statut du bot',
-      `**Latence du message:** \`${messageLatency}ms\`\n**Latence de l'API Discord:** \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
+      `**Statut Discord** \n*Latence du message:* \`${messageLatency}ms\`\n*Latence API:* \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
     );
 
     await interaction.editReply({ content: '', embeds: [embed] });
