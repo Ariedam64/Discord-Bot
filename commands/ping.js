@@ -5,14 +5,14 @@ const axios = require('axios');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('ping')
-    .setDescription('Affiche la latence du bot et son status.'),
+    .setDescription('Affiche le statut du bot.'),
   async execute(interaction) {
 
     const herokuApiKey = process.env.HEROKU_API_KEY;
     const herokuAppName = process.env.HEROKU_APP_NAME;
     const uptimeRobotApiKey = process.env.UPTIME_ROBOT_API_KEY;
 
-    const sentMessage = await interaction.reply({ content: 'Calcul du ping...', fetchReply: true });
+    const sentMessage = await interaction.reply({ content: 'Récupération des données...', fetchReply: true });
     const apiLatency = interaction.client.ws.ping;
     const messageLatency = sentMessage.createdTimestamp - interaction.createdTimestamp;
 
