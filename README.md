@@ -33,6 +33,9 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     OPENAI_API_KEY=ta-cle-openai
     CLIENT_ID=ton-client-id
     GUILD_ID=ton-guild-id
+    HEROKU_API_KEY=ta-cle-heroku
+    HEROKU_APP_NAME=nom-de-ton-app-heroku
+    UPTIME_ROBOT_API_KEY=ta-cle-uptimerobot
     ```
 4. Déploiement local
     Pour lancer le bot en local, exécutez la commande suivante :
@@ -55,6 +58,9 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     heroku config:set OPENAI_API_KEY=ta-cle-openai
     heroku config:set CLIENT_ID=ton-client-id
     heroku config:set GUILD_ID=ton-guild-id
+    heroku config:set HEROKU_API_KEY=ta-cle-heroku
+    heroku config:set HEROKU_APP_NAME=nom-de-ton-app-heroku
+    heroku config:set UPTIME_ROBOT_API_KEY=ta-cle-uptimerobot
     ```
 
 4. Démarrez les dynos sur Heroku Exécutez les commandes suivantes pour démarrer les dynos web et worker sur Heroku :
@@ -75,7 +81,7 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
 - [index.js] : fichier principal où le bot est initialisé.
 - [commands] : contient les fichiers de commandes slash personnalisées.
 - [events] : contient les événements auxquels le bot réagit.
-- [utils] : contient des fonctions utilitaires comme le code du jeu Puissance 4.
+- [utils] : contient des fonctions utilitaires.
 - [embeds] : gestion des messages formatés en embed pour une meilleure présentation sur Discord.
 
 ## Technologies utilisées
