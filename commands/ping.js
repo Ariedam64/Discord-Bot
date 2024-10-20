@@ -16,8 +16,8 @@ module.exports = {
     const apiLatency = interaction.client.ws.ping;
     const messageLatency = sentMessage.createdTimestamp - interaction.createdTimestamp;
 
-    let dynosInfo = `- Erreur: \`Impossible de récupérer le statut des dynos Heroku\``;
-    let uptimeStatus = '- Erreur: \`Impossible de récupérer le statut du moniteur UptimeRobot.\`';
+    let dynosInfo = `- Erreur: \`Impossible de récupérer les dynos d\'Heroku\``;
+    let uptimeStatus = '- Erreur: \`Impossible de récupérer le moniteur d\'UptimeRobot.\`';
     let uptimeResponseTime = '';
     let averageResponseTime = '';
 
@@ -34,6 +34,8 @@ module.exports = {
     }
 
     try {
+      const expectedDynos = ['web', 'worker'];
+      const dynosInfoMap = {};
       const response = await axios({
         method: 'get',
         url: `https://api.heroku.com/apps/${herokuAppName}/dynos`,
@@ -43,16 +45,22 @@ module.exports = {
         }
       });
 
-      const dynos = response.data.map(dyno => {
-
+      response.data.forEach(dyno => {
         const now = new Date();
         const createdAt = new Date(dyno.created_at);
         const timeElapsed = Math.floor((now - createdAt) / 60000); 
-        const stateInUpperCase = dyno.state.toUpperCase();
-
-        return `- ${dyno.type}: \`${stateInUpperCase}\` depuis ${formatElapsedTime(timeElapsed)}`;
+        const status = dyno.state.toUpperCase();
+        
+        dynosInfoMap[dyno.type] = `- ${dyno.type}: \`${status}\` depuis ${formatElapsedTime(timeElapsed)}`;
+      });
+    
+      dynosInfo = expectedDynos.map(dynoType => {
+        if (dynosInfoMap[dynoType]) {
+          return dynosInfoMap[dynoType];
+        } else {
+          return `- ${dynoType}: \`DOWN\``;
+        }
       }).join('\n');
-      dynosInfo = `${dynos}`;
 
     } catch (error) {
       console.error('Erreur avec l\'API Heroku:', error);
