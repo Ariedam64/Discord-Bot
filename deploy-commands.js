@@ -1,6 +1,9 @@
 const { REST, Routes } = require('discord.js');
-const { clientId, guildId, token } = require('./config.json');
+require('dotenv').config();
 const fs = require('fs');
+
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
 const commands = [];
 
@@ -12,7 +15,7 @@ for (const file of commandFiles) {
   commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '10' }).setToken(token);
+const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
 (async () => {
   try {
@@ -21,7 +24,7 @@ const rest = new REST({ version: '10' }).setToken(token);
     // Enregistrer les commandes pour un serveur spécifique (Guild commands)
     // await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
 
-    await rest.put(Routes.applicationCommands(clientId), { body: commands });
+    await rest.put(Routes.applicationCommands(DISCORD_CLIENT_ID), { body: commands });
 
     console.log('Commandes enregistrées avec succès.');
   } catch (error) {

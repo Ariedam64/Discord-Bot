@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { OpenAI } = require('openai');
-const { config } = require('dotenv');
 const { createImageEmbed } = require('../embeds/embedTemplates');
 
-config();
+require('dotenv').config();
+
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
