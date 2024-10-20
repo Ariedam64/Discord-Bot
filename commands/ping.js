@@ -74,7 +74,7 @@ module.exports = {
       });
 
       const monitor = response.data.monitors[0];
-      const status = monitor.status === 2 ? '\`UP\`' : '\`DOWN\`';
+      const status = monitor.status === 2 ? `\`UP\`` : `\`DOWN\``;
       const log = monitor.logs[0];
       const lastPing = monitor.response_times[0];
       averageResponseTime = monitor.average_response_time;
