@@ -49,8 +49,7 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     ```bash
     heroku create nom-de-ton-bot
     ```
-3. Configurer les variables d'environnement sur Heroku
-    Définissez les variables d'environnement pour Discord et OpenAI :
+3. Définissez les variables d'environnement pour Discord et OpenAI :
     ```bash
     heroku config:set DISCORD_TOKEN=ton-token-discord
     heroku config:set OPENAI_API_KEY=ta-cle-openai
