@@ -5,5 +5,4 @@ node_modules/
 *.log
 
 # Fichier config contenant des informations sensibles
-config.json
 .env
