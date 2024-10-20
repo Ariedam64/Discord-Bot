@@ -1,9 +1,8 @@
 const fs = require('fs');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 require('dotenv').config();
-
+ 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-
 global.configData = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
 global.botName = "Arie"
 
