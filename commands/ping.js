@@ -16,8 +16,8 @@ module.exports = {
     const apiLatency = interaction.client.ws.ping;
     const messageLatency = sentMessage.createdTimestamp - interaction.createdTimestamp;
 
-    let dynosInfo = 'Impossible de récupérer le statut des dynos Heroku.';
-    let uptimeStatus = 'Impossible de récupérer le statut du moniteur UptimeRobot.';
+    let dynosInfo = `- Erreur: \`Impossible de récupérer le statut des dynos Heroku\``;
+    let uptimeStatus = '- Erreur: \`Impossible de récupérer le statut du moniteur UptimeRobot.\`';
     let uptimeResponseTime = '';
     let averageResponseTime = '';
 
@@ -27,9 +27,9 @@ module.exports = {
       const minutes = minutesElapsed % 60;
 
       let result = '';
-      if (days > 0) result = `${days} jours `;
-      if (hours > 0) result += `${hours}h`;
-      result += `${minutes}min`;
+      if (days > 0) result = `${days} jours`;
+      if (hours > 0) result = `${hours}h${minutes}`;
+      result = `${minutes}min`;
       return result;
     }
 
@@ -43,23 +43,16 @@ module.exports = {
         }
       });
 
-      const formatDate = (isoDate) => {
-        const date = new Date(isoDate);
-        return date.toLocaleString('fr-FR', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric', 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
-      };
-
       const dynos = response.data.map(dyno => {
-        const formattedDate = formatDate(dyno.created_at);
+
+        const now = new Date();
+        const createdAt = new Date(dyno.created_at);
+        const timeElapsed = Math.floor((now - createdAt) / 60000); 
         const stateInUpperCase = dyno.state.toUpperCase();
-        return `*${dyno.type}*: \`${stateInUpperCase}\` depuis le ${formattedDate}`;
+
+        return `- ${dyno.type}: \`${stateInUpperCase}\` depuis ${formatElapsedTime(timeElapsed)}`;
       }).join('\n');
-      dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
+      dynosInfo = `${dynos}`;
 
     } catch (error) {
       console.error('Erreur avec l\'API Heroku:', error);
@@ -76,26 +69,25 @@ module.exports = {
       const monitor = response.data.monitors[0];
       const status = monitor.status === 2 ? `\`UP\`` : `\`DOWN\``;
       const log = monitor.logs[0];
-      const lastPing = monitor.response_times[0];
+      const lastPingDateTime = monitor.response_times[0].datetime;
+      const lastPingValue = monitor.response_times[0].value;
       averageResponseTime = monitor.average_response_time;
 
-      const duration = Math.floor(log.duration / 60); // Convertir la durée en minutes
-      const lastPingTime = new Date(lastPing.datetime * 1000).toLocaleString(); // Date du dernier ping
-
+      const duration = Math.floor(log.duration / 60); 
       const now = new Date();
+      const lastPingTime = new Date(lastPingDateTime * 1000);
       const minutesAgo = Math.floor((now - lastPingTime) / 60000);
 
-      uptimeStatus = `- Moniteur: ${status} (depuis ${formatElapsedTime(duration)})`;
-      uptimeResponseTime = `- Dernier ping: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)`;
+      uptimeStatus = `- Moniteur: ${status} depuis ${formatElapsedTime(duration)}`;
+      uptimeResponseTime = `- Dernier ping: \`${lastPingValue}ms\` il y a ${minutesAgo}min`;
 
     } catch (error) {
       console.error('Erreur avec l\'API UptimeRobot:', error);
     }
-    console.log(lastPing)
 
     const embed = createInfoEmbed(
       'Statut du bot',
-      `**Statut Discord** \n- Latence du message: \`${messageLatency}ms\`\n- Latence API: \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
+      `**Statut Discord** \n- Latence du message: \`${messageLatency}ms\`\n- Latence API: \`${apiLatency}ms\`\n\n**Statut des dynos Heroku:**\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
     );
 
     await interaction.editReply({ content: '', embeds: [embed] });
