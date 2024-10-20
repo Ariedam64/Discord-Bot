@@ -57,7 +57,7 @@ module.exports = {
       const dynos = response.data.map(dyno => {
         const formattedDate = formatDate(dyno.created_at);
         const stateInUpperCase = dyno.state.toUpperCase();
-        return `*${dyno.type}*: ${stateInUpperCase} depuis le ${formattedDate}`;
+        return `*${dyno.type}*: \`${stateInUpperCase}\` depuis le ${formattedDate}`;
       }).join('\n');
       dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
 
@@ -74,7 +74,7 @@ module.exports = {
       });
 
       const monitor = response.data.monitors[0];
-      const status = monitor.status === 2 ? 'UP' : 'DOWN';
+      const status = monitor.status === 2 ? '\`UP\`' : '\`DOWN\`';
       const log = monitor.logs[0];
       const lastPing = monitor.response_times[0];
       averageResponseTime = monitor.average_response_time;
