@@ -10,12 +10,16 @@ module.exports = {
 
     const herokuApiKey = process.env.HEROKU_API_KEY;
     const herokuAppName = process.env.HEROKU_APP_NAME;
+    const uptimeRobotApiKey = process.env.UPTIME_ROBOT_API_KEY;
 
     const sentMessage = await interaction.reply({ content: 'Calcul du ping...', fetchReply: true });
-
     const apiLatency = interaction.client.ws.ping;
     const messageLatency = sentMessage.createdTimestamp - interaction.createdTimestamp;
+
     let dynosInfo = 'Impossible de récupérer le statut des dynos Heroku.';
+    let uptimeStatus = 'Impossible de récupérer le statut du moniteur UptimeRobot.';
+    let uptimeResponseTime = '';
+    let averageResponseTime = '';
 
     try {
       const response = await axios({
@@ -41,17 +45,42 @@ module.exports = {
       const dynos = response.data.map(dyno => {
         const formattedDate = formatDate(dyno.created_at);
         const stateInUpperCase = dyno.state.toUpperCase();
-        return `**${dyno.type}**: ${stateInUpperCase} (Démarré le: ${formattedDate})`;
+        return `**${dyno.type}**: ${stateInUpperCase} (Depuis le ${formattedDate})`;
       }).join('\n');
-      dynosInfo = `**Statut des dynos Heroku:**\n\n${dynos}`;
+      dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
 
     } catch (error) {
       console.error('Erreur avec l\'API Heroku:', error);
     }
 
+    try {
+      const response = await axios({
+        method: 'post',
+        url: 'https://api.uptimerobot.com/v2/getMonitors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        data: `api_key=${uptimeRobotApiKey}&format=json&logs=1&logs_limit=1&response_times=1&response_times_limit=1`
+      });
+
+      const monitor = response.data.monitors[0];
+      const status = monitor.status === 2 ? 'UP' : 'DOWN';
+      const log = monitor.logs[0];
+      const lastPing = monitor.response_times[0];
+      averageResponseTime = monitor.average_response_time;
+
+      const duration = Math.floor(log.duration / 60); // Convertir la durée en minutes
+      const logDate = new Date(log.datetime * 1000).toLocaleString(); // Date du dernier log
+      const lastPingTime = new Date(lastPing.datetime * 1000).toLocaleString(); // Date du dernier ping
+
+      uptimeStatus = `Le moniteur est ${status} depuis ${duration} minutes (Dernier log: ${logDate})`;
+      uptimeResponseTime = `Dernier ping: ${lastPing.value}ms (à ${lastPingTime})\nTemps de réponse moyen: ${averageResponseTime}ms`;
+
+    } catch (error) {
+      console.error('Erreur avec l\'API UptimeRobot:', error);
+    }
+
     const embed = createInfoEmbed(
       'Statut du bot',
-      `**Latence du message:** \`${messageLatency}ms\`\n**Latence de l'API Discord:** \`${apiLatency}ms\`\n\n${dynosInfo}`
+      `**Latence du message:** \`${messageLatency}ms\`\n**Latence de l'API Discord:** \`${apiLatency}ms\`\n\n${dynosInfo}\n\n**Statut du moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
     );
 
     await interaction.editReply({ content: '', embeds: [embed] });
