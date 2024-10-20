@@ -26,7 +26,7 @@ module.exports = {
       let embed = new EmbedBuilder()
         .setTitle(`Puissance 4 : ${joueur1.user.username} vs ${joueur2.user.username}`)
         .setDescription(game.displayBoard())
-        .setFooter({ text: `C'est à ${game.getCurrentPlayer().user.username} de jouer ${game.getCurrentPlayer().color.replace('‎ ‎ ‎ ‎', '')}. Choisissez une colonne.` });
+        .setFooter({ text: `${game.getCurrentPlayer().color.replace('‎ ', '')}C'est à ${game.getCurrentPlayer().user.username} de jouer.` });
 
       const message = await interaction.reply({ embeds: [embed], fetchReply: true });
 
@@ -52,7 +52,7 @@ module.exports = {
       embed = new EmbedBuilder()
             .setTitle(`Puissance 4: ${joueur1.user.username} VS ${joueur2.user.username}`)
             .setDescription(game.displayBoard())
-            .setFooter({ text: game.winner ? `${game.winner.user.username} a gagné !` : `C'est à ${game.getCurrentPlayer().user.username} de jouer ${game.getCurrentPlayer().color.replace('‎ ‎ ‎ ‎', '')}` });
+            .setFooter({ text: game.winner ? `${game.winner.user.username} a gagné !` : `${game.getCurrentPlayer().color.replace('‎ ', '')} C'est à ${game.getCurrentPlayer().user.username} de jouer.` });
 
       await message.edit({ embeds: [embed] });
 
@@ -98,7 +98,7 @@ module.exports = {
           embed = new EmbedBuilder()
             .setTitle(`Puissance 4 : ${joueur1.user.username} vs ${joueur2.user.username}`)
             .setDescription(game.displayBoard())
-            .setFooter({ text: game.winner ? `${game.winner.user.username} a gagné !` : `C'est à ${game.getCurrentPlayer().user.username} de jouer ${game.getCurrentPlayer().color.replace('‎ ‎ ‎ ‎', '')}` });
+            .setFooter({ text: game.winner ? `${game.winner.user.username} a gagné !` : `${game.getCurrentPlayer().color.replace('‎ ', '')} C'est à ${game.getCurrentPlayer().user.username} de jouer.` });
 
           await message.edit({ embeds: [embed] });
         } catch (error) {
@@ -108,7 +108,8 @@ module.exports = {
 
       collector.on('end', async () => {
         if (!game.winner) {
-          await interaction.followUp("La partie est terminée, temps écoulé !");
+          game.winner = game.lastPlayer;
+          await interaction.followUp(`${game.winner.user.username} a gagné car le temps est écoulé !`);
         }
         await message.reactions.removeAll();
       });

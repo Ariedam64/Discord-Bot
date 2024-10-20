@@ -23,14 +23,15 @@ class Player {
 class Game {
     constructor(player1, player2) {
       this.board = this.createBoard(); 
-      player1.color=YELLOW_SQUARE;
-      player2.color=RED_SQUARE;
-      this.previousPlayer= PREVIOUS_PLAY;
-      this.emptyPlay=EMPTY_PLAY;
+      player1.color = YELLOW_SQUARE;
+      player2.color = RED_SQUARE;
+      this.previousPlayer = PREVIOUS_PLAY;
+      this.emptyPlay = EMPTY_PLAY;
       this.players = [player1, player2]; 
       this.currentPlayerIndex = Math.floor(Math.random() * 2); 
-      this.lastMove=null;
+      this.lastMove = null;
       this.winner = null;
+      this.lastPlayer = null;
       this.winningPositions = [];
     }
   
@@ -67,6 +68,7 @@ class Game {
       for (let row = this.board.length - 1; row >= 0; row--) {
           if (this.board[row][col] === WHITE_SQUARE) {
               this.board[row][col] = color;
+              this.lastPlayer = this.getCurrentPlayer();
               this.lastMove = col;
               return true;
           }
