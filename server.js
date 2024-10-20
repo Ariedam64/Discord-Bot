@@ -1,4 +1,4 @@
-//UptimeRobot ping
+//Serveur léger pour les pings UptimeRobot.
 
 const express = require('express');
 const app = express();

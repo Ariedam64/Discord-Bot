@@ -6,7 +6,7 @@ const client = new OpenAI({
 });
 
 global.messageHistory = [];
-global.currentContext = "agressif";
+global.currentContext = "professionnel";
 
 module.exports = {
   name: 'messageCreate',
