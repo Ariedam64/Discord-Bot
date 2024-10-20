@@ -87,7 +87,7 @@ module.exports = {
 
     const embed = createInfoEmbed(
       'Bot Statut',
-      `**Discord** \n- Latence du message: \`${messageLatency}ms\`\n- Latence API: \`${apiLatency}ms\`\n\n**Dynos Heroku:**\n${dynosInfo}\n\n**Moniteur UptimeRobot:**\n${uptimeStatus}\n${uptimeResponseTime}`
+      `**Discord** \n- Latence du message: \`${messageLatency}ms\`\n- Latence API: \`${apiLatency}ms\`\n\n**Dynos Heroku**\n${dynosInfo}\n\n**Moniteur UptimeRobot**\n${uptimeStatus}\n${uptimeResponseTime}`
     );
 
     await interaction.editReply({ content: '', embeds: [embed] });
