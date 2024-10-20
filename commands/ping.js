@@ -45,7 +45,7 @@ module.exports = {
       const dynos = response.data.map(dyno => {
         const formattedDate = formatDate(dyno.created_at);
         const stateInUpperCase = dyno.state.toUpperCase();
-        return `**${dyno.type}**: ${stateInUpperCase} (Depuis le ${formattedDate})`;
+        return `**${dyno.type}**: ${stateInUpperCase} depuis le ${formattedDate}`;
       }).join('\n');
       dynosInfo = `**Statut des dynos Heroku:**\n${dynos}`;
 
@@ -68,11 +68,13 @@ module.exports = {
       averageResponseTime = monitor.average_response_time;
 
       const duration = Math.floor(log.duration / 60); // Convertir la durée en minutes
-      const logDate = new Date(log.datetime * 1000).toLocaleString(); // Date du dernier log
       const lastPingTime = new Date(lastPing.datetime * 1000).toLocaleString(); // Date du dernier ping
 
-      uptimeStatus = `Le moniteur est ${status} depuis ${duration} minutes (Dernier log: ${logDate})`;
-      uptimeResponseTime = `Dernier ping: ${lastPing.value}ms (à ${lastPingTime})\nTemps de réponse moyen: ${averageResponseTime}ms`;
+      const now = new Date();
+      const minutesAgo = Math.floor((now - lastPingTime) / 60000);
+
+      uptimeStatus = `**Moniteur**: ${status} depuis ${duration} minutes`;
+      uptimeResponseTime = `Dernier ping: \`${lastPing.value}ms\` (il y a ${minutesAgo}min)\nTemps de réponse moyen: \`${averageResponseTime}ms\``;
 
     } catch (error) {
       console.error('Erreur avec l\'API UptimeRobot:', error);
