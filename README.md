@@ -57,12 +57,19 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     heroku config:set CLIENT_ID=ton-client-id
     heroku config:set GUILD_ID=ton-guild-id
     ```
-4. Déployez sur Heroku
+
+4. Démarrez les dynos sur Heroku Exécutez les commandes suivantes pour démarrer les dynos web et worker sur Heroku :
+    ```bash
+    heroku ps:scale web=1
+    heroku ps:scale worker=1
+    ```
+5. Déployez sur Heroku
     Poussez votre code vers Heroku pour déployer votre bot :
     ```bash
     git push heroku master
     ```
-5. Utilisation d'UptimeRobot pour maintenir le bot en ligne
+
+6. Utilisation d'UptimeRobot pour maintenir le bot en ligne
     Configurez UptimeRobot pour pinger l'URL de votre application Heroku toutes les 5 minutes afin de la maintenir active.
 
 ## Structure du Projet
