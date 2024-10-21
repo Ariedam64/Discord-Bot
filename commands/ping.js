@@ -28,7 +28,7 @@ module.exports = {
 
       let result = '';
       if (days > 0) result = `${days} jours`;
-      else if (hours > 0) result = `${hours}h${minutes}`;
+      else if (hours > 0) result = `${hours}h et ${minutes}min`;
       else result = `${minutes}min`;
       return result;
     }
