@@ -42,7 +42,7 @@ module.exports = {
 
       try {
         function cleanAssistantMessage(content) {
-          return content.replace(/^Arie: /, '');
+          return content.replace(/^Arie\s*:\s*/, '');
         }
 
         const historyMessages = messageHistory.map(msg => ({
