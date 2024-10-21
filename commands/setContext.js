@@ -12,7 +12,7 @@ module.exports = {
       .setRequired(true)
       .addChoices(
         { name: 'Agressif', value: 'agressif' },
-        { name: 'Professionnel', value: 'professionnel' },
+        { name: 'Normal', value: 'lambda_discord' },
         { name: 'Codeur', value: 'codeur' },
         { name: 'Waifu', value: 'waifu' },
         { name: 'Mathématicien', value: 'math' },
