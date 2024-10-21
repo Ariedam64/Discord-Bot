@@ -28,8 +28,8 @@ module.exports = {
 
       let result = '';
       if (days > 0) result = `${days} jours`;
-      if (hours > 0) result = `${hours}h${minutes}`;
-      result = `${minutes}min`;
+      else if (hours > 0) result = `${hours}h${minutes}`;
+      else result = `${minutes}min`;
       return result;
     }
 
