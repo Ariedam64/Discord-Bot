@@ -37,7 +37,18 @@ function createWarningEmbed(title, description) {
     .setDescription(description || 'Faites attention.')
 }
 
+function createMusicEmbed(title, url, thumbnailUrl, duration, requester) {
+  return new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle(`🎶 Lecture en cours : ${title}`)
+    .setURL(url)
+    .setDescription(`**Durée** : ${duration}\n**Demandé par** : ${requester}`)
+    .setThumbnail(thumbnailUrl)
+    .setFooter({ text: 'Utilisez les boutons pour contrôler la lecture.' });
+}
+
 module.exports = {
+  createMusicEmbed,
   createSuccessEmbed,
   createErrorEmbed,
   createInfoEmbed,
