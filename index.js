@@ -1,6 +1,8 @@
 const fs = require('fs');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const {Player} = require('discord-player');
 require('dotenv').config();
+const { YoutubeiExtractor } = require("discord-player-youtubei")
  
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 global.configData = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
@@ -18,6 +20,15 @@ const client = new Client({
 
 // Charger les commandes
 client.slashCommands = new Collection();
+client.player = new Player(client, {
+  initialVolume: 10,
+  ytdlOptions: {
+    filter: 'audioonly',
+    quality: 'highestaudio',
+    highWaterMark: 1 << 25
+  }
+});
+client.player.extractors.register(YoutubeiExtractor, {})
 const slashCommandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of slashCommandFiles) {

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { leaveVoice } = require('../utils/voice.js');
+const { leaveVoice } = require('../utils/vocal.js');
 
 module.exports = {
     data: new SlashCommandBuilder()

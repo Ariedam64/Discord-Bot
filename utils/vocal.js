@@ -1,4 +1,4 @@
-const { joinVoiceChannel } = require('@discordjs/voice');
+const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const { createSuccessEmbed, createErrorEmbed } = require('../embeds/embedTemplates.js');
 
 async function joinVoice(interaction) {
@@ -14,6 +14,7 @@ async function joinVoice(interaction) {
       channelId: channel.id,
       guildId: channel.guild.id,
       adapterCreator: channel.guild.voiceAdapterCreator,
+      selfDeaf: false,
     });
 
     const embed = createSuccessEmbed(
@@ -22,6 +23,7 @@ async function joinVoice(interaction) {
     );
 
     await interaction.reply({ content: '', embeds: [embed], ephemeral: true });
+    return connection;
 
   } catch (error) {
     console.error('Erreur lors de la tentative de connexion au salon vocal :', error);

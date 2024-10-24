@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { joinVoiceChannel } = require('@discordjs/voice');
-const ytdl = require('ytdl-core');
-const { playMusic, addSongToQueue, queue } = require('../utils/music.js');
+const { useMainPlayer, QueryType } = require("discord-player")
+const { createSuccessEmbed, createErrorEmbed } = require('../embeds/embedTemplates.js');;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,51 +12,61 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
+    
+
+    const player = useMainPlayer();
+
     const url = interaction.options.getString('url');
     const voiceChannel = interaction.member.voice.channel;
+    const queue = await player.nodes.create(interaction.guild);
 
     if (!voiceChannel) {
-      return interaction.reply('Tu dois être dans un salon vocal pour jouer de la musique !');
+      const errorEmbed = createErrorEmbed('Tu dois être dans un salon vocal pour jouer de la musique !');
+      return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
     }
 
-    const songInfo = await ytdl.getInfo(url);
-    const song = {
-      title: songInfo.videoDetails.title,
-      url: songInfo.videoDetails.video_url,
-    };
+    try {
 
-    const serverQueue = queue.get(interaction.guild.id);
-
-    if (!serverQueue) {
-      const queueContract = {
-        textChannel: interaction.channel,
-        voiceChannel: voiceChannel,
-        connection: null,
-        songs: [],
-        player: null,
-      };
-
-      queue.set(interaction.guild.id, queueContract);
-      queueContract.songs.push(song);
-
-      try {
-        const connection = joinVoiceChannel({
-          channelId: voiceChannel.id,
-          guildId: voiceChannel.guild.id,
-          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-        });
-
-        queueContract.connection = connection;
-        playMusic(interaction.guild, queueContract.songs[0], interaction);
-
-      } catch (err) {
-        console.error(err);
-        queue.delete(interaction.guild.id);
-        return interaction.reply('Erreur lors de la connexion au salon vocal.');
+      if (!queue.connection) {
+        console.log('Connecting to voice channel...');
+        await queue.connect(voiceChannel, { deaf: false });
       }
-    } else {
-      const response = addSongToQueue(interaction.guild.id, song);
-      return interaction.reply(response);
+
+      const music = await player.search(url, {
+        requestedBy: interaction.user,
+        searchEngine: QueryType.AUTO
+      }).then(x => x.tracks[0]);
+
+      await interaction.reply('🔄 Recherche de la musique...');
+
+      console.log(music.title)
+
+      const lyrics = await player.lyrics.search({ q: music.title });
+
+      if (lyrics[0].syncedLyrics) {
+        const syncedLyrics = queue.syncedLyrics(lyrics[0]);
+        const unsubscribe = syncedLyrics.onChange(async (lyrics, timestamp) => {
+          console.log(lyrics, timestamp);
+          //await interaction.followUp(`🎤 ${lyrics}`);
+       });
+      }
+
+      if (!music) {
+        return interaction.reply('Aucune musique trouvée pour cette URL.');
+      }
+
+      await queue.addTrack(music);
+
+      if (!queue.playing) {
+        console.log('Starting playback...');
+        await queue.node.play();
+      }
+
+      await interaction.editReply(`🎶 Lecture de la musique : **${music.title}**`);
+  
+    } catch (error) {
+      console.error('Erreur lors de la lecture de la musique :', error);
+      interaction.reply('Une erreur est survenue lors de la lecture de la musique.');
     }
-  }
+  },
 };
