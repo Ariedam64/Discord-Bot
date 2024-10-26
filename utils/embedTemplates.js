@@ -80,6 +80,25 @@ function createMusicComponents(){
   return row;
 }
 
+function createGameEmbed(game) {
+  const embed = new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle(game.title)
+    .setDescription(game.description)
+    .setThumbnail(game.gameImage)
+    .setFooter({ text: `Prix d\'origine: ${game.originalPrice}` });
+
+    if (game.startDate != "N/A") {
+      embed.addFields({ name: 'Gratuit: ', value: ` ${game.startDate} - ${game.endDate}`, inline: false });
+    }
+
+    if (game.upcomingStartDate != "N/A") {
+      embed.addFields({ name: 'Prochainement: ', value: ` ${game.upcomingStartDate} - ${game.upcomingEndDate}`, inline: false });
+    }
+
+    return embed;
+}
+
 module.exports = {
   createMusicComponents,
   createMusicEmbed,
@@ -87,5 +106,6 @@ module.exports = {
   createErrorEmbed,
   createInfoEmbed,
   createWarningEmbed,
-  createImageEmbed
+  createImageEmbed,
+  createGameEmbed
 };
