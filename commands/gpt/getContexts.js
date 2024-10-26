@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createInfoEmbed } = require('../../utils/embedTemplates');
-const { getConfig } = require('../../handlers/configHandler');
+const { getConfig } = require('../../utils/configUtils');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,7 +10,7 @@ module.exports = {
   async execute(interaction) {
 
     const configData = getConfig();
-    
+
     const contextDescriptions = Object.keys(configData.contexts).map(context => {
       const description = configData.contexts[context].description;
       return `**__${context}__**: ${description}`;

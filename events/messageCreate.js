@@ -1,6 +1,6 @@
 const { OpenAI } = require('openai');
-const { getConfig } = require('../handlers/configHandler');
-const { getMessageHistory, addMessageToHistory, getContextMessages, cleanAssistantMessage } = require('../handlers/GPTHandler');
+const { getConfig } = require('../utils/configUtils');
+const { getMessageHistory, addMessageToHistory, getContextMessages, cleanAssistantMessage } = require('../utils/GPTUtils');
 require('dotenv').config();
 
 const client = new OpenAI({

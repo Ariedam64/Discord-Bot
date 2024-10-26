@@ -3,7 +3,7 @@ const commandHandler = require('./handlers/commandHandler');
 const eventHandler = require('./handlers/eventHandler');
 const playerHandler = require('./handlers/playerHandler');
 const interactionHandler = require('./handlers/interactionHandler');
-const { loadConfig } = require('./handlers/configHandler');
+const { loadConfig } = require('./utils/configUtils');
 require('dotenv').config();
 
 const client = new Client({

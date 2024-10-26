@@ -1,7 +1,7 @@
-const { getConfig } = require('../../handlers/configHandler');
+const { getConfig } = require('../../utils/configUtils');
 const { SlashCommandBuilder } = require('discord.js');
 const { createSuccessEmbed, createErrorEmbed } = require('../../utils/embedTemplates');
-const { resetMessageHistory, setCurrentContext } = require('../../handlers/GPTHandler');
+const { resetMessageHistory, setCurrentContext } = require('../../utils/GPTUtils');
 
 module.exports = {
   data: new SlashCommandBuilder()

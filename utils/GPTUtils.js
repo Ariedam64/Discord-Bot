@@ -1,4 +1,4 @@
-const { getConfig } = require('./configHandler');
+const { getConfig } = require('./configUtils');
 
 let messageHistory = [];
 let messagesLimit = 20;

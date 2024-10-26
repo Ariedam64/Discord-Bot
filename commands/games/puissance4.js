@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { Player, Game } = require('../../utils/puissance4.js');
+const { Player, Game } = require('../../utils/commandLogic/puissance4.js');
 
 module.exports = {
   data: new SlashCommandBuilder()

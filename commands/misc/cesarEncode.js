@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createSuccessEmbed } = require('../../utils/embedTemplates');
-const { cesarEncode } = require('../../utils/cesar');
+const { cesarEncode } = require('../../utils/commandLogic/cesar');
 
 module.exports = {
   data: new SlashCommandBuilder()
