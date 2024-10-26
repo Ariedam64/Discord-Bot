@@ -68,6 +68,7 @@ const scheduleFreeGamesNotification = async (client) => {
 
     // Schedule to send free games every Thursday at 6:00 AM
     cron.schedule('0 6 * * 4', async () => {
+        await fetchFreeGames();
         await sendGamesToChannel(client, process.env.EPIC_GAMES_FREE_GAMES_CHANNEL);
     });
 };
