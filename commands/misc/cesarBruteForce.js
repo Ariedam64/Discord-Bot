@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createSuccessEmbed } = require('../embeds/embedTemplates');
-const { cesarBruteforce } = require('../utils/cesar');
+const { createSuccessEmbed } = require('../../utils/embedTemplates');
+const { cesarBruteforce } = require('../../utils/cesar');
 
 module.exports = {
   data: new SlashCommandBuilder()

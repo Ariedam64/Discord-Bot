@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { OpenAI } = require('openai');
-const { createImageEmbed } = require('../embeds/embedTemplates');
+const { createImageEmbed } = require('../../utils/embedTemplates');
 
 require('dotenv').config();
 

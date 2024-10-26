@@ -1,20 +1,17 @@
 const { OpenAI } = require('openai');
+const { getConfig } = require('../handlers/configHandler');
+const { getMessageHistory, addMessageToHistory, getContextMessages, cleanAssistantMessage } = require('../handlers/GPTHandler');
 require('dotenv').config();
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-global.messageHistory = [];
-global.currentContext = "lambda_discord";
-
 module.exports = {
   name: 'messageCreate',
   async execute(message) {
-    const userId = message.author.id;
-    const userName = message.author.username;
     var userMessage = message.content.trim();
-
+    var userName = message.author.username;
 
     if (message.mentions.users.size > 0) {
       message.mentions.users.forEach((user) => {
@@ -23,36 +20,15 @@ module.exports = {
     }
 
     if (message.embeds.length < 1) {
-      global.messageHistory.push({
-        user: userName,
-        content: userMessage,
-      });
-    }
-
-    if (global.messageHistory.length > 20) {
-      global.messageHistory.shift();
+      addMessageToHistory(userName, userMessage);
     }
 
     if (message.mentions.has(message.client.user) && !message.author.bot) {
 
-      let historyContext = '';
-      global.messageHistory.forEach((msg) => {
-        historyContext += `${msg.user}: ${msg.content}\n`;
-      });
-
       try {
-        function cleanAssistantMessage(content) {
-          return content.replace(/^Arie\s*:\s*/, '');
-        }
-
-        const historyMessages = messageHistory.map(msg => ({
-          role: msg.user === message.client.user.username ? 'assistant' : 'user',
-          content: `${msg.user}: ${msg.content}`
-        }));
-
-        console.log(historyMessages)
-
-        const contextMessages = global.configData.contexts[currentContext].messages;
+        
+        const contextMessages = getContextMessages();
+        const historyMessages = getMessageHistory(message);
 
         const gptResponse = await client.chat.completions.create({
           model: 'gpt-4o-mini',

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createInfoEmbed } = require('../embeds/embedTemplates.js'); 
+const { createInfoEmbed } = require('../../utils/embedTemplates'); 
 const axios = require('axios');
 
 module.exports = {

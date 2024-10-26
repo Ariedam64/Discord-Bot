@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createInfoEmbed } = require('../embeds/embedTemplates');
+const { createInfoEmbed } = require('../../utils/embedTemplates');
+const { getConfig } = require('../../handlers/configHandler');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,8 +8,11 @@ module.exports = {
     .setDescription('Affiche les contextes disponibles avec leurs descriptions.'),
 
   async execute(interaction) {
+
+    const configData = getConfig();
+    
     const contextDescriptions = Object.keys(configData.contexts).map(context => {
-      const description = global.configData.contexts[context].description;
+      const description = configData.contexts[context].description;
       return `**__${context}__**: ${description}`;
     }).join('\n');;
 

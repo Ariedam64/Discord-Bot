@@ -1,5 +1,5 @@
 const { joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
-const { createSuccessEmbed, createErrorEmbed } = require('../embeds/embedTemplates.js');
+const { createSuccessEmbed, createErrorEmbed } = require('./embedTemplates');
 
 async function joinVoice(interaction) {
   const channel = interaction.member.voice.channel;

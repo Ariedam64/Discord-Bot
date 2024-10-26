@@ -1,12 +1,10 @@
-const fs = require('fs');
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
-const {Player} = require('discord-player');
+const { Client, GatewayIntentBits } = require('discord.js');
+const commandHandler = require('./handlers/commandHandler');
+const eventHandler = require('./handlers/eventHandler');
+const playerHandler = require('./handlers/playerHandler');
+const interactionHandler = require('./handlers/interactionHandler');
+const { loadConfig } = require('./handlers/configHandler');
 require('dotenv').config();
-const { YoutubeiExtractor } = require("discord-player-youtubei")
- 
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-global.configData = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
-global.botName = "Arie"
 
 const client = new Client({
   intents: [
@@ -18,48 +16,13 @@ const client = new Client({
   ],
 });
 
-// Charger les commandes
-client.slashCommands = new Collection();
-client.player = new Player(client, {
-  initialVolume: 10,
-  ytdlOptions: {
-    filter: 'audioonly',
-    quality: 'highestaudio',
-    highWaterMark: 1 << 25
-  }
-});
-client.player.extractors.register(YoutubeiExtractor, {})
-const slashCommandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-for (const file of slashCommandFiles) {
-  const command = require(`./commands/${file}`);
-  client.slashCommands.set(command.data.name, command);
-}
+(async () => {
+  loadConfig(); //Charger le fichier de configuration au démarrage
+  await commandHandler(client);
+  eventHandler(client);
+  playerHandler(client);
+  interactionHandler(client);
 
-// Charger les événements
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
-for (const file of eventFiles) {
-  const event = require(`./events/${file}`);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args));
-  }
-}
-
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-  
-    const command = client.slashCommands.get(interaction.commandName);
-  
-    if (!command) return;
-  
-    try {
-      await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({ content: 'Il y a eu une erreur en exécutant cette commande!', ephemeral: true });
-    }
-  });
-
-client.login(DISCORD_TOKEN);
+  client.login(process.env.DISCORD_TOKEN);
+})();

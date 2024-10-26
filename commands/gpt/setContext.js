@@ -1,6 +1,7 @@
-
+const { getConfig } = require('../../handlers/configHandler');
 const { SlashCommandBuilder } = require('discord.js');
-const { createSuccessEmbed, createErrorEmbed } = require('../embeds/embedTemplates');
+const { createSuccessEmbed, createErrorEmbed } = require('../../utils/embedTemplates');
+const { resetMessageHistory, setCurrentContext } = require('../../handlers/GPTHandler');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,12 +22,13 @@ module.exports = {
       )),
 
       async execute(interaction) {
+        const configData = getConfig();
         const chosenContext = interaction.options.getString('contexte');
     
         if (configData.contexts[chosenContext]) {
-          global.currentContext = chosenContext;
-          global.messageHistory = []
-          const description = global.configData.contexts[chosenContext].description;
+          setCurrentContext(chosenContext);
+          resetMessageHistory()
+          const description = configData.contexts[chosenContext].description;
     
           const successEmbed = createSuccessEmbed(
             `Contexte changé : ${chosenContext}`,

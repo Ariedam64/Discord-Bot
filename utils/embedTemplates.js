@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { colors } = require('../config.json'); 
 
 function createSuccessEmbed(title, description) {
@@ -37,17 +37,51 @@ function createWarningEmbed(title, description) {
     .setDescription(description || 'Faites attention.')
 }
 
-function createMusicEmbed(title, url, thumbnailUrl, duration, requester) {
+function createMusicEmbed(music) {
   return new EmbedBuilder()
     .setColor(colors.info)
-    .setTitle(`🎶 Lecture en cours : ${title}`)
-    .setURL(url)
-    .setDescription(`**Durée** : ${duration}\n**Demandé par** : ${requester}`)
-    .setThumbnail(thumbnailUrl)
-    .setFooter({ text: 'Utilisez les boutons pour contrôler la lecture.' });
+    .setTitle(`🎶 **${music.cleanTitle}**`)
+    .setURL(music.url)
+    .setAuthor({ name: music.author })
+    .setThumbnail(music.thumbnail)
+    .setFooter({ text: 'Durée: ' + music.duration })
+    .setTimestamp();
+}
+
+function createMusicComponents(){
+  const backButton = new ButtonBuilder()
+  .setCustomId('back')
+  .setLabel('⏮️')
+  .setStyle(ButtonStyle.Primary);
+
+  const pauseButton = new ButtonBuilder()
+    .setCustomId('pause')
+    .setLabel('⏸️')
+    .setStyle(ButtonStyle.Secondary);
+
+  const forwardButton = new ButtonBuilder()
+    .setCustomId('forward')
+    .setLabel('⏭️')
+    .setStyle(ButtonStyle.Primary);
+
+  const volumeUpButton = new ButtonBuilder()
+    .setCustomId('volume_up')
+    .setLabel('🔊')
+    .setStyle(ButtonStyle.Success);
+
+  const volumeDownButton = new ButtonBuilder()
+    .setCustomId('volume_down')
+    .setLabel('🔉')
+    .setStyle(ButtonStyle.Danger);
+
+  const row = new ActionRowBuilder()
+    .addComponents(backButton, pauseButton, forwardButton, volumeUpButton, volumeDownButton);
+
+  return row;
 }
 
 module.exports = {
+  createMusicComponents,
   createMusicEmbed,
   createSuccessEmbed,
   createErrorEmbed,
