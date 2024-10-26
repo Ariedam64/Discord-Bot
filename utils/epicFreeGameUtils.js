@@ -50,12 +50,12 @@ const sendGamesToChannel = async (client, channelName) => {
     }
 
     for (const game of currentGames) {
-        const embed = createGameEmbed(game);
+        const embed = createGameEmbed(game, false);
         await channel.send({ embeds: [embed] });
     }
 
     for (const game of nextGames) {
-        const embed = createGameEmbed(game);
+        const embed = createGameEmbed(game, true);
         await channel.send({ embeds: [embed] });
     }
 }
