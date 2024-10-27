@@ -99,6 +99,31 @@ function createGameEmbed(game, isUpcoming) {
     return embed;
 }
 
+function createDetailAnimeEmbed(anime) {
+
+  const fields = [];
+
+  if (anime.score) {fields.push({ name: 'Score', value: `⭐ ${anime.score}`, inline: true });}
+  if (anime.popularity) {fields.push({ name: 'Popularité', value: `📈 ${anime.popularity}`, inline: true });}
+  if (anime.rank) {fields.push({ name: 'Classement', value: `🏆 #${anime.rank}`, inline: true });}
+  
+
+  const embed = new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle(`${anime.titles[0].title} (${anime.type})`)
+    .setImage(anime.images.webp.large_image_url)
+    .setDescription( anime.synopsis ? anime.synopsis : 'Synopsis non disponible')
+    .addFields(fields);
+
+    if (anime.trailer.url) {
+        embed.setURL(anime.trailer.url);
+    } else {
+        embed.setURL(anime.url);
+    }
+
+    return embed;
+}
+
 module.exports = {
   createMusicComponents,
   createMusicEmbed,
@@ -107,5 +132,6 @@ module.exports = {
   createInfoEmbed,
   createWarningEmbed,
   createImageEmbed,
-  createGameEmbed
+  createGameEmbed,
+  createDetailAnimeEmbed
 };
