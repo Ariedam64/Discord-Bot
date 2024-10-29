@@ -53,7 +53,6 @@ function createMusicEmbed(music) {
 
   const fields = [];
 
-  console.log(music);
   fields.push({ name: 'Durée', value: music.duration, inline: true });
   fields.push({ name: 'Vues', value: formatNumber(music.views), inline: true });
 

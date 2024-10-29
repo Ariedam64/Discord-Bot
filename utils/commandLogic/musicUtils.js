@@ -230,8 +230,7 @@ class MusicPlayer {
             return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
 
-        const cleanUrl = this.cleanUrl(url);
-        const song = await this.searchYoutubeMusic(cleanUrl);
+        const song = await this.searchYoutubeMusic(this.cleanUrl(url));
 
         if (!song) {
             const errorEmbed = createErrorEmbed("Aucune musique trouvée pour l'URL donnée.");
