@@ -2,7 +2,9 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { colors } = require('../config.json'); 
 
 function formatNumber(num) {
-  if (num >= 1e6) {
+  if (num >= 1e9) {
+      return (num / 1e9).toFixed(0) + 'B'; // Milliards
+  } else if (num >= 1e6) {
       return (num / 1e6).toFixed(0) + 'M'; // Millions
   } else if (num >= 1e3) {
       return (num / 1e3).toFixed(0) + 'k'; // Milliers
@@ -48,15 +50,29 @@ function createWarningEmbed(title, description) {
 }
 
 function createMusicEmbed(music) {
+
+  const fields = [];
+
+  fields.push({ name: 'Durée', value: music.duration, inline: true });
+  fields.push({ name: 'Vues', value: formatNumber(music.views), inline: true });
+
   return new EmbedBuilder()
     .setColor(colors.info)
     .setTitle(`🎶 **${music.cleanTitle}**`)
     .setURL(music.url)
     .setThumbnail(music.thumbnail)
-    .addFields({ name: 'Durée', value: music.duration, inline: true })
-    .addFields({ name: 'Vues', value: formatNumber(music.views), inline: true })
+    .addFields(fields)
     .setTimestamp()
+}
 
+function createLyricsEmbed(lyrics=null) {
+
+  const SyncedLyrics = lyrics || 'Non disponible';
+
+  return new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle('🎤 Lyrics synchronisées 🎤')
+    .setDescription(SyncedLyrics);
 }
 
 function createGameEmbed(game, isUpcoming) {
@@ -100,6 +116,7 @@ function createDetailAnimeEmbed(anime) {
 }
 
 module.exports = {
+  createLyricsEmbed,
   createMusicEmbed,
   createSuccessEmbed,
   createErrorEmbed,

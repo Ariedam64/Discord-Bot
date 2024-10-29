@@ -1,6 +1,6 @@
 const { Events } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
-const { players } = require('../utils/commandLogic/music');
+const { players } = require('../utils/commandLogic/musicUtils');
 
 module.exports = {
   name: Events.MessageReactionAdd,
