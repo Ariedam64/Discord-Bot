@@ -8,7 +8,7 @@ class MusicPlayer {
     constructor(interaction) {
         this.player = useMainPlayer();
         this.queue = null;
-        this.volume = 5;
+        this.volume = 1;
         this.isPlaying = false;
 
         this.currentTrack = null;
