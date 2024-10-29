@@ -1,15 +1,15 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { colors } = require('../config.json'); 
 
 function formatNumber(num) {
   if (num >= 1e9) {
-      return (num / 1e9).toFixed(0) + 'B'; // Milliards
+      return (num / 1e9).toFixed(0) + 'B'; 
   } else if (num >= 1e6) {
-      return (num / 1e6).toFixed(0) + 'M'; // Millions
+      return (num / 1e6).toFixed(0) + 'M'; 
   } else if (num >= 1e3) {
-      return (num / 1e3).toFixed(0) + 'k'; // Milliers
+      return (num / 1e3).toFixed(0) + 'k'; 
   } else {
-      return num.toString(); // Retourne le nombre tel quel s'il est inférieur à 1000
+      return num.toString(); 
   }
 }
 
@@ -53,6 +53,7 @@ function createMusicEmbed(music) {
 
   const fields = [];
 
+  console.log(music);
   fields.push({ name: 'Durée', value: music.duration, inline: true });
   fields.push({ name: 'Vues', value: formatNumber(music.views), inline: true });
 

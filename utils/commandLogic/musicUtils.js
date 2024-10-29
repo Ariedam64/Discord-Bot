@@ -118,7 +118,6 @@ class MusicPlayer {
         try {
             const embed = await createMusicEmbed(song)
             this.embedMessage = await interaction.reply({ embeds: [embed] });
-
             const message = await interaction.fetchReply();
 
             await message.react('⏮️'); 
@@ -126,6 +125,7 @@ class MusicPlayer {
             await message.react('⏭️'); 
             await message.react('🔉'); 
             await message.react('🔊');
+
 
             await this.queue.play(song);
             this.queue.node.setVolume(this.volume);
