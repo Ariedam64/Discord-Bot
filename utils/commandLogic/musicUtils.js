@@ -230,6 +230,8 @@ class MusicPlayer {
             return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
 
+        console.log("url: " + url);
+        console.log("cleanUrl: " + this.cleanUrl(url));
         const song = await this.searchYoutubeMusic(this.cleanUrl(url));
 
         if (!song) {
