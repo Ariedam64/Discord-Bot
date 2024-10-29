@@ -1,6 +1,16 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { colors } = require('../config.json'); 
 
+function formatNumber(num) {
+  if (num >= 1e6) {
+      return (num / 1e6).toFixed(0) + 'M'; // Millions
+  } else if (num >= 1e3) {
+      return (num / 1e3).toFixed(0) + 'k'; // Milliers
+  } else {
+      return num.toString(); // Retourne le nombre tel quel s'il est inférieur à 1000
+  }
+}
+
 function createSuccessEmbed(title, description) {
   return new EmbedBuilder()
     .setColor(colors.success)
@@ -42,42 +52,11 @@ function createMusicEmbed(music) {
     .setColor(colors.info)
     .setTitle(`🎶 **${music.cleanTitle}**`)
     .setURL(music.url)
-    .setAuthor({ name: music.author })
     .setThumbnail(music.thumbnail)
-    .setFooter({ text: 'Durée: ' + music.duration })
-    .setTimestamp();
-}
+    .addFields({ name: 'Durée', value: music.duration, inline: true })
+    .addFields({ name: 'Vues', value: formatNumber(music.views), inline: true })
+    .setTimestamp()
 
-function createMusicComponents(){
-  const backButton = new ButtonBuilder()
-  .setCustomId('back')
-  .setLabel('⏮️')
-  .setStyle(ButtonStyle.Primary);
-
-  const pauseButton = new ButtonBuilder()
-    .setCustomId('pause')
-    .setLabel('⏸️')
-    .setStyle(ButtonStyle.Secondary);
-
-  const forwardButton = new ButtonBuilder()
-    .setCustomId('forward')
-    .setLabel('⏭️')
-    .setStyle(ButtonStyle.Primary);
-
-  const volumeUpButton = new ButtonBuilder()
-    .setCustomId('volume_up')
-    .setLabel('🔊')
-    .setStyle(ButtonStyle.Success);
-
-  const volumeDownButton = new ButtonBuilder()
-    .setCustomId('volume_down')
-    .setLabel('🔉')
-    .setStyle(ButtonStyle.Danger);
-
-  const row = new ActionRowBuilder()
-    .addComponents(backButton, pauseButton, forwardButton, volumeUpButton, volumeDownButton);
-
-  return row;
 }
 
 function createGameEmbed(game, isUpcoming) {
@@ -103,6 +82,7 @@ function createDetailAnimeEmbed(anime) {
 
   const fields = [];
 
+  const animeUrl = anime.trailer.url ? anime.trailer.url : anime.url;
   if (anime.score) {fields.push({ name: 'Score', value: `⭐ ${anime.score}`, inline: true });}
   if (anime.popularity) {fields.push({ name: 'Popularité', value: `📈 ${anime.popularity}`, inline: true });}
   if (anime.rank) {fields.push({ name: 'Classement', value: `🏆 #${anime.rank}`, inline: true });}
@@ -111,21 +91,15 @@ function createDetailAnimeEmbed(anime) {
   const embed = new EmbedBuilder()
     .setColor(colors.info)
     .setTitle(`${anime.titles[0].title} (${anime.type})`)
+    .setURL(animeUrl)
     .setImage(anime.images.webp.large_image_url)
     .setDescription( anime.synopsis ? anime.synopsis : 'Synopsis non disponible')
     .addFields(fields);
-
-    if (anime.trailer.url) {
-        embed.setURL(anime.trailer.url);
-    } else {
-        embed.setURL(anime.url);
-    }
 
     return embed;
 }
 
 module.exports = {
-  createMusicComponents,
   createMusicEmbed,
   createSuccessEmbed,
   createErrorEmbed,

@@ -1,3 +1,5 @@
+const { players } = require('../utils/commandLogic/music');
+
 module.exports = {
     name: 'voiceStateUpdate',
     execute(oldState, newState) {
