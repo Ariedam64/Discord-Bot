@@ -1,5 +1,6 @@
 const { useMainPlayer, QueryType } = require("discord-player");
 const { createMusicEmbed, createErrorEmbed,  createSuccessEmbed, createLyricsEmbed} = require('../embedTemplates');
+const wait = require('node:timers/promises').setTimeout;
 
 players = {};
 
@@ -137,7 +138,13 @@ class MusicPlayer {
     async addSongToQueue(song, interaction) {
         await this.queue.addTrack(song);
         const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
-        await interaction.reply({ embeds: [successEmbed], ephemeral: true });
+        await interaction.reply({ embeds: [successEmbed], ephemeral: false });
+        await wait(5_000);
+        try {
+            await interaction.deleteReply(); 
+        } catch (error) {
+            console.error('Erreur addSongToQueue: Suppression de la réponse :', error);
+        }
     }
     
     async updateMusicEmbed() {
@@ -151,6 +158,7 @@ class MusicPlayer {
 
     async updateLyricsEmbed() {
         try {
+
             if (this.currentLyrics && !this.lyricsEmbedMessage) {
                 this.lyricsEmbedMessage = await this.textChannel.send({ embeds: [createLyricsEmbed(this.currentLyrics)] });
             } else if (!this.currentLyrics && this.lyricsEmbedMessage) { 
