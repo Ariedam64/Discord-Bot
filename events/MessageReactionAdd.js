@@ -15,7 +15,7 @@ module.exports = {
           currentPlayer.playPreviousSong();
           break;
         case '⏸️':
-          currentPlayer.pauseToggle();
+          currentPlayer.togglePause();
           break;
         case '⏭️':
           currentPlayer.playNextSong();
@@ -25,6 +25,12 @@ module.exports = {
           break;
         case '🔊':
           currentPlayer.increaseVolume();
+          break;
+        case '🔀':
+          currentPlayer.toogleShuffle();
+          break;
+        case '🔁':
+          currentPlayer.toggleLoop();
           break;
       }
 

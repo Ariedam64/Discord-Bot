@@ -10,6 +10,8 @@ class MusicPlayer {
         this.queue = null;
         this.volume = 1;
         this.isPlaying = false;
+        this.isLoop = false;
+        this.isShuffle = false;
 
         this.currentTrack = null;
         this.currentLyrics = null;
@@ -24,7 +26,7 @@ class MusicPlayer {
     }
 
     initPlayerEvents() {
-        this.player.events.on('playerStart', async (player, track) => {
+        this.player.events.on('playerStart', async (queue, track) => {
             this.currentTrack = track; 
             this.isPlaying = true;
             this.currentLyrics = null;
@@ -32,6 +34,10 @@ class MusicPlayer {
             this.updateLyricsEmbed();
 
             const syncedLyrics = await this.searchSyncedLyrics(track);
+
+            if (this.shuffleEnabled) {
+                this.queue.tracks.shuffle();
+            }
 
             if (syncedLyrics) {
                 syncedLyrics.onChange(async (lyrics, timestamp) => {
@@ -41,18 +47,27 @@ class MusicPlayer {
 
                 this.lyricsUnsubscribe = syncedLyrics.subscribe();
             }
+            
         });
-        this.player.events.on('playerFinish', async (player, track) => {
-            if (this.queue.getSize() === 0) {
+        this.player.events.on('playerFinish', async (queue, track) => {
+            if (this.loop && this.currentTrack) {
+                await this.queue.addTrack(track);
+            }
+        });
+        this.player.events.on('emptyQueue', async (queue) => {
+
+            if (this.loop && this.currentTrack) {
+                await this.queue.addTrack(this.currentTrack);
+            } else {
+                this.isPlaying = false;
+                this.currentTrack = null;
                 this.queue.node.stop();
                 this.queue.clear();
                 await this.embedMessage.delete();
-                this.isPlaying = false;
-                this.currentTrack = null;
                 if (this.lyricsEmbedMessage) {
                     await this.lyricsEmbedMessage.delete();
                 }
-            }
+            } 
         });
     }
 
@@ -125,7 +140,8 @@ class MusicPlayer {
             await message.react('⏭️'); 
             await message.react('🔉'); 
             await message.react('🔊');
-
+            await message.react('🔀'); 
+            await message.react('🔁');
 
             await this.queue.play(song);
             this.queue.node.setVolume(this.volume);
@@ -140,6 +156,9 @@ class MusicPlayer {
         const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
         await interaction.reply({ embeds: [successEmbed], ephemeral: false });
         await wait(5_000);
+        if (this.shuffleEnabled) {
+            this.queue.tracks.shuffle();
+        }
         try {
             await interaction.deleteReply(); 
         } catch (error) {
@@ -172,7 +191,18 @@ class MusicPlayer {
         }
     }
 
-    async pauseToggle() {
+    toggleLoop() {
+        this.loop = !this.loop;
+    }
+
+    async toggleShuffle() {
+        this.shuffleEnabled = !this.shuffleEnabled;
+        if (this.shuffleEnabled) {
+            this.queue.tracks.shuffle(); 
+        }
+    }
+
+    async togglePause() {
         try {
             if (this.queue.node.isPaused()) {
                 await this.queue.node.resume(); 
@@ -249,6 +279,7 @@ class MusicPlayer {
         }
 
         if (this.voiceChannel && !this.queue.connection) {
+            this.voiceChannel = interaction.member.voice.channel;
             await this.connectToVoiceChannel();
         }
 
