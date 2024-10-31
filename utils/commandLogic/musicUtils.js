@@ -1,5 +1,5 @@
 const { useMainPlayer, QueryType , QueueRepeatMode } = require("discord-player");
-const { createMusicEmbed, createErrorEmbed,  createSuccessEmbed, createLyricsEmbed} = require('../../templates/embedTemplates');
+const { createMusicEmbed, createErrorEmbed,  createSuccessEmbed, createLyricsEmbed, createQueueEmbed} = require('../../templates/embedTemplates');
 const { createMusicComponents } = require('../../templates/componentsTemplate');
 const wait = require('node:timers/promises').setTimeout;
 
@@ -10,6 +10,8 @@ class MusicPlayer {
         this.player = useMainPlayer();
         this.queue = null;
         this.volume = 1;
+        this.maxVolume = 20;
+        this.minVolume = 1;
         this.isPlaying = false;
         this.isLoop = false;
         this.isLoopOne = false;
@@ -48,7 +50,7 @@ class MusicPlayer {
             }
             
         });
-        this.player.events.on('emptyQueue', async (queue) => {
+        this.player.events.on('disconnect', async (queue) => {
             this.isPlaying = false;
             this.currentTrack = null;
             this.queue.node.stop();
@@ -121,7 +123,7 @@ class MusicPlayer {
 
         try {
             const embed = await createMusicEmbed(song)
-            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= 1, this.volume >= 10);
+            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= this.minVolume, this.volume >= this.maxVolume);
             this.embedMessage = await interaction.reply({ embeds: [embed], components: components, ephemeral: false });
 
             await this.queue.play(song);
@@ -173,7 +175,7 @@ class MusicPlayer {
     async updateEmbedComponents() {
         if (!this.embedMessage) {return;}
         try {
-            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= 1, this.volume >= 10);
+            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= this.minVolume, this.volume >= this.maxVolume);
             await this.embedMessage.edit({ components: components });
         } catch (error) {
             console.error("MUSIC updateComponents: Erreur lors de la mise à jour des composants: " + error);
@@ -235,7 +237,7 @@ class MusicPlayer {
     }
 
     decreaseVolume() {
-        if (this.volume > 0) {
+        if (this.volume > this.minVolume) {
             this.volume -= 1;
             this.queue.node.setVolume(this.volume);
             this.updateEmbedComponents();
@@ -243,7 +245,7 @@ class MusicPlayer {
     }
 
     increaseVolume() {
-        if (this.volume < 10) {
+        if (this.volume < this.maxVolume) {
             this.volume += 1;
             this.queue.node.setVolume(this.volume);
             this.updateEmbedComponents();
@@ -268,6 +270,18 @@ class MusicPlayer {
         this.queue.node.stop();
         const successEmbed = createSuccessEmbed("La musique a été arrêtée");
         interaction.reply({ embeds: [successEmbed], ephemeral: true });
+    }
+
+    async displayQueue(interaction) {
+        if (!this.queue || this.queue.getSize() === 0) {
+            const errorEmbed = createErrorEmbed("La file d'attente est vide.");
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+
+        const queueEmbed = createQueueEmbed(this.queue.history.tracks, this.currentTrack, this.queue.tracks);
+        await interaction.reply({ embeds: [queueEmbed], ephemeral: false });
+        await wait(15_000);
+        await interaction.deleteReply(); 
     }
 
     cleanUrl(url) {

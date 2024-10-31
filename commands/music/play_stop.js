@@ -20,6 +20,11 @@ module.exports = {
       subcommand
         .setName('stop')
         .setDescription('Arrêter la musique')
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('tracks')
+        .setDescription('Afficher la liste des pistes en file d\'attente')
     ),
 
   async execute(interaction) {
@@ -44,6 +49,9 @@ module.exports = {
         break;
       case 'stop':
         await player.stopPlaying(interaction);
+        break;
+      case 'tracks':
+        await player.displayQueue(interaction);
         break;
     }
 

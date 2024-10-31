@@ -115,7 +115,40 @@ function createDetailAnimeEmbed(anime) {
     return embed;
 }
 
+function createQueueEmbed(previousTracksQueue, currentTrack, upcomingTracksQueue) {
+
+  const previousTracks = previousTracksQueue.data;
+  const upcomingTracks = upcomingTracksQueue.data;
+
+  const allTracks = [...previousTracks, currentTrack, ...upcomingTracks];
+
+  const fields = [];
+  
+  allTracks.forEach((track, index) => {
+    if (track === currentTrack) {
+      fields.push({
+        name: `➡️ ${index + 1}. ${track.title}`,
+        value: `Durée: ${track.duration}`,
+        inline: false
+      });
+    } else {
+      fields.push({
+        name: `${index + 1}. ${track.title}`,
+        value: `Durée: ${track.duration}`,
+        inline: false
+      });
+    }
+  });
+
+  return new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle('🎶 File d\'attente 🎶')
+    .addFields(fields)
+    .setTimestamp();
+}
+
 module.exports = {
+  createQueueEmbed,
   createLyricsEmbed,
   createMusicEmbed,
   createSuccessEmbed,
