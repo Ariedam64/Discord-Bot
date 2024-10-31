@@ -1,5 +1,6 @@
-const { useMainPlayer, QueryType } = require("discord-player");
-const { createMusicEmbed, createErrorEmbed,  createSuccessEmbed, createLyricsEmbed} = require('../embedTemplates');
+const { useMainPlayer, QueryType , QueueRepeatMode } = require("discord-player");
+const { createMusicEmbed, createErrorEmbed,  createSuccessEmbed, createLyricsEmbed} = require('../../templates/embedTemplates');
+const { createMusicComponents } = require('../../templates/componentsTemplate');
 const wait = require('node:timers/promises').setTimeout;
 
 players = {};
@@ -11,6 +12,7 @@ class MusicPlayer {
         this.volume = 1;
         this.isPlaying = false;
         this.isLoop = false;
+        this.isLoopOne = false;
         this.isShuffle = false;
 
         this.currentTrack = null;
@@ -32,12 +34,9 @@ class MusicPlayer {
             this.currentLyrics = null;
             this.updateMusicEmbed(); 
             this.updateLyricsEmbed();
+            this.updateEmbedComponents();
 
             const syncedLyrics = await this.searchSyncedLyrics(track);
-
-            if (this.shuffleEnabled) {
-                this.queue.tracks.shuffle();
-            }
 
             if (syncedLyrics) {
                 syncedLyrics.onChange(async (lyrics, timestamp) => {
@@ -49,25 +48,15 @@ class MusicPlayer {
             }
             
         });
-        this.player.events.on('playerFinish', async (queue, track) => {
-            if (this.loop && this.currentTrack) {
-                await this.queue.addTrack(track);
-            }
-        });
         this.player.events.on('emptyQueue', async (queue) => {
-
-            if (this.loop && this.currentTrack) {
-                await this.queue.addTrack(this.currentTrack);
-            } else {
-                this.isPlaying = false;
-                this.currentTrack = null;
-                this.queue.node.stop();
-                this.queue.clear();
-                await this.embedMessage.delete();
-                if (this.lyricsEmbedMessage) {
-                    await this.lyricsEmbedMessage.delete();
-                }
-            } 
+            this.isPlaying = false;
+            this.currentTrack = null;
+            this.queue.node.stop();
+            this.queue.clear();
+            await this.embedMessage.delete();
+            if (this.lyricsEmbedMessage) {
+                await this.lyricsEmbedMessage.delete();
+            }
         });
     }
 
@@ -132,16 +121,8 @@ class MusicPlayer {
 
         try {
             const embed = await createMusicEmbed(song)
-            this.embedMessage = await interaction.reply({ embeds: [embed] });
-            const message = await interaction.fetchReply();
-
-            await message.react('⏮️'); 
-            await message.react('⏸️'); 
-            await message.react('⏭️'); 
-            await message.react('🔉'); 
-            await message.react('🔊');
-            await message.react('🔀'); 
-            await message.react('🔁');
+            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= 1, this.volume >= 10);
+            this.embedMessage = await interaction.reply({ embeds: [embed], components: components, ephemeral: false });
 
             await this.queue.play(song);
             this.queue.node.setVolume(this.volume);
@@ -153,12 +134,10 @@ class MusicPlayer {
 
     async addSongToQueue(song, interaction) {
         await this.queue.addTrack(song);
+        this.updateEmbedComponents();
         const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
         await interaction.reply({ embeds: [successEmbed], ephemeral: false });
         await wait(5_000);
-        if (this.shuffleEnabled) {
-            this.queue.tracks.shuffle();
-        }
         try {
             await interaction.deleteReply(); 
         } catch (error) {
@@ -191,15 +170,53 @@ class MusicPlayer {
         }
     }
 
-    toggleLoop() {
-        this.loop = !this.loop;
+    async updateEmbedComponents() {
+        if (!this.embedMessage) {return;}
+        try {
+            const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= 1, this.volume >= 10);
+            await this.embedMessage.edit({ components: components });
+        } catch (error) {
+            console.error("MUSIC updateComponents: Erreur lors de la mise à jour des composants: " + error);
+        }
     }
 
-    async toggleShuffle() {
-        this.shuffleEnabled = !this.shuffleEnabled;
-        if (this.shuffleEnabled) {
-            this.queue.tracks.shuffle(); 
-        }
+    async rewind(seconds = 10) {
+        if (!this.queue || !this.currentTrack) return;
+
+        const currentPosition = this.queue.node.streamTime; 
+        const newPosition = Math.max(0, currentPosition - seconds * 1000); 
+        await this.queue.node.seek(newPosition); 
+    }
+
+    async forward(seconds = 10) {
+        if (!this.queue || !this.currentTrack) return;
+
+        const currentPosition = this.queue.node.streamTime; 
+        const trackDuration = this.currentTrack.durationMS; 
+        const newPosition = Math.min(trackDuration, currentPosition + seconds * 1000)-1; 
+        await this.queue.node.seek(newPosition);
+    }
+
+    toggleShuffle() {
+        this.isShuffle = !this.isShuffle;
+        this.queue.toggleShuffle();
+        this.updateEmbedComponents();
+    }
+
+    toggleLoop() {
+        this.isLoop = !this.isLoop;
+        this.isLoopOne = false;
+        const newMode = this.queue.repeatMode === QueueRepeatMode.OFF ? QueueRepeatMode.QUEUE : QueueRepeatMode.OFF;
+        this.queue.setRepeatMode(newMode);
+        this.updateEmbedComponents();
+    }
+
+    toggleLoopOne() {
+        this.isLoopOne = !this.isLoopOne;
+        this.isLoop = false;
+        const newMode = this.queue.repeatMode === QueueRepeatMode.TRACK ? QueueRepeatMode.OFF : QueueRepeatMode.TRACK;
+        this.queue.setRepeatMode(newMode);
+        this.updateEmbedComponents();
     }
 
     async togglePause() {
@@ -211,6 +228,7 @@ class MusicPlayer {
                 await this.queue.node.pause(); 
                 this.isPlaying = false;
             }
+            await this.updateEmbedComponents();
         } catch (error) {
             console.error("MUSIC pauseToggle: Erreur lors du basculement de pause: " + error);
         }
@@ -218,27 +236,31 @@ class MusicPlayer {
 
     decreaseVolume() {
         if (this.volume > 0) {
-            this.volume -= 5;
+            this.volume -= 1;
             this.queue.node.setVolume(this.volume);
+            this.updateEmbedComponents();
         }
     }
 
     increaseVolume() {
-        if (this.volume < 100) {
-            this.volume += 5;
+        if (this.volume < 10) {
+            this.volume += 1;
             this.queue.node.setVolume(this.volume);
+            this.updateEmbedComponents();
         }
     }
 
     playNextSong() {
         if (this.queue.getSize() > 0) {
             this.queue.node.skip();
+            this.updateEmbedComponents();
         }
     }
 
     playPreviousSong() {
         if (this.queue.history.previousTrack){
             this.queue.history.back();
+           this.updateEmbedComponents();
         }
     }
 

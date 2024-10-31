@@ -1,6 +1,6 @@
 const { getConfig } = require('../../utils/configUtils');
 const { SlashCommandBuilder } = require('discord.js');
-const { createSuccessEmbed, createErrorEmbed } = require('../../utils/embedTemplates');
+const { createSuccessEmbed, createErrorEmbed } = require('../../templates/embedTemplates');
 const { resetMessageHistory, setCurrentContext } = require('../../utils/GPTUtils');
 
 module.exports = {

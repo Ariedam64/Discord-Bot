@@ -1,6 +1,6 @@
 const { EpicFreeGames } = require('epic-free-games');
 const cron = require('node-cron');
-const { createGameEmbed } = require('./embedTemplates');
+const { createGameEmbed } = require('../templates/embedTemplates');
 const { format } = require('date-fns');
 const { fr } = require('date-fns/locale');
 

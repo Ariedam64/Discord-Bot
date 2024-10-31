@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createSuccessEmbed, createErrorEmbed } = require('../../utils/embedTemplates');
+const { createSuccessEmbed, createErrorEmbed } = require('../../templates/embedTemplates');
 const fs = require('fs');
 const path = require('path');
 

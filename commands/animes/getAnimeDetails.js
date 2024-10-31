@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createErrorEmbed, createDetailAnimeEmbed } = require('../../utils/embedTemplates');
+const { createErrorEmbed, createDetailAnimeEmbed } = require('../../templates/embedTemplates');
 const { searchAnime } = require('../../utils/animeUtils');
 const { addWithOptions } = require('date-fns/fp');
 
