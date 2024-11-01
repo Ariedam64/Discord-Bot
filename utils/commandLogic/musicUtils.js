@@ -132,8 +132,8 @@ class MusicPlayer {
             const embed = await createMusicEmbed(this.queue.history.previousTrack, song, this.queue.tracks, this.previousLyrics, this.currentLyrics, this.nextLyrics);
             const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= this.minVolume, this.volume >= this.maxVolume);
             this.embedMessage = await interaction.reply({ embeds: [embed], components: components, ephemeral: false });
-
-            await this.queue.play(song);
+            
+            await this.queue.play(song); 
             this.queue.node.setVolume(this.volume);
 
         } catch (error) {   
