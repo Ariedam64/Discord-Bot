@@ -18,10 +18,11 @@ class MusicPlayer {
         this.isShuffle = false;
 
         this.currentTrack = null;
+        this.previousLyrics = null;
         this.currentLyrics = null;
+        this.nextLyrics = null;
 
         this.embedMessage = null;
-        this.lyricsEmbedMessage = null;
 
         this.voiceChannel = interaction.member.voice.channel; 
         this.textChannel = interaction.guild.channels.cache.find(c => c.name === 'music');
@@ -33,17 +34,26 @@ class MusicPlayer {
         this.player.events.on('playerStart', async (queue, track) => {
             this.currentTrack = track; 
             this.isPlaying = true;
+            this.previousLyrics = null;
             this.currentLyrics = null;
+            this.nextLyrics = null;
             this.updateMusicEmbed(); 
-            this.updateLyricsEmbed();
             this.updateEmbedComponents();
 
             const syncedLyrics = await this.searchSyncedLyrics(track);
-
+            
             if (syncedLyrics) {
+                const lyricsArray = [...syncedLyrics.lyrics.entries()].sort((a, b) => a[0] - b[0]);
                 syncedLyrics.onChange(async (lyrics, timestamp) => {
+                    this.previousLyrics = this.currentLyrics;
                     this.currentLyrics = lyrics; 
-                    this.updateLyricsEmbed();
+
+                    const currentIndex = lyricsArray.findIndex(([time]) => time === timestamp);
+                    this.nextLyrics = currentIndex !== -1 && lyricsArray[currentIndex + 1]
+                        ? lyricsArray[currentIndex + 1][1]  
+                        : null; 
+
+                    this.updateMusicEmbed();
                 });
 
                 this.lyricsUnsubscribe = syncedLyrics.subscribe();
@@ -56,9 +66,6 @@ class MusicPlayer {
             this.queue.node.stop();
             this.queue.clear();
             await this.embedMessage.delete();
-            if (this.lyricsEmbedMessage) {
-                await this.lyricsEmbedMessage.delete();
-            }
         });
     }
 
@@ -122,7 +129,7 @@ class MusicPlayer {
         if (!song) {return;}
 
         try {
-            const embed = await createMusicEmbed(song)
+            const embed = await createMusicEmbed(this.queue.history.previousTrack, song, this.queue.tracks, this.previousLyrics, this.currentLyrics, this.nextLyrics);
             const components = createMusicComponents(this.isPlaying, this.isShuffle, this.isLoop, this.isLoopOne, this.queue.history.previousTrack, this.queue.getSize() > 0, this.volume <= this.minVolume, this.volume >= this.maxVolume);
             this.embedMessage = await interaction.reply({ embeds: [embed], components: components, ephemeral: false });
 
@@ -136,6 +143,7 @@ class MusicPlayer {
 
     async addSongToQueue(song, interaction) {
         await this.queue.addTrack(song);
+        this.updateMusicEmbed(); 
         this.updateEmbedComponents();
         const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
         await interaction.reply({ embeds: [successEmbed], ephemeral: false });
@@ -150,25 +158,9 @@ class MusicPlayer {
     async updateMusicEmbed() {
         if (!this.embedMessage) {return;}
         try {
-            await this.embedMessage.edit({ embeds: [createMusicEmbed(this.currentTrack)] });
+            await this.embedMessage.edit({ embeds: [createMusicEmbed(this.queue.history.tracks, this.currentTrack, this.queue.tracks, this.previousLyrics, this.currentLyrics, this.nextLyrics)] });
         } catch (error) {
             console.error("MUSIC updateEmbed: Erreur lors de la mise à jour de l'embed: " + error);
-        }
-    }
-
-    async updateLyricsEmbed() {
-        try {
-
-            if (this.currentLyrics && !this.lyricsEmbedMessage) {
-                this.lyricsEmbedMessage = await this.textChannel.send({ embeds: [createLyricsEmbed(this.currentLyrics)] });
-            } else if (!this.currentLyrics && this.lyricsEmbedMessage) { 
-                await this.lyricsEmbedMessage.delete();
-                this.lyricsEmbedMessage = null;
-            } else if (this.lyricsEmbedMessage) { 
-                await this.lyricsEmbedMessage.edit({ embeds: [createLyricsEmbed(this.currentLyrics)] });
-            }
-        } catch (error) {
-            console.error("MUSIC updateLyricsEmbed: Erreur lors de la mise à jour de l'embed de lyrics: " + error);
         }
     }
 

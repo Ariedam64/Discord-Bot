@@ -49,30 +49,64 @@ function createWarningEmbed(title, description) {
     .setDescription(description || 'Faites attention.')
 }
 
-function createMusicEmbed(music) {
+function createMusicEmbed(previousTracksQueue, currentTrack, upcomingTracksQueue, previousLyrics, currentLyrics, nextLyrics) {
 
-  const fields = [];
 
-  fields.push({ name: 'Durée', value: music.duration, inline: true });
-  fields.push({ name: 'Vues', value: formatNumber(music.views), inline: true });
+  var previousTracks = [];
+  var upcomingTracks = [];
+
+  if (previousTracksQueue){
+    previousTracks = previousTracksQueue.data;
+  }
+  if (upcomingTracksQueue){
+    upcomingTracks = upcomingTracksQueue.data;
+  }
+
+  var previousTrack = previousTracks.length > 0 ? previousTracks[previousTracks.length - 1] : null;
+  var nextTrack = upcomingTracks.length > 0 ? upcomingTracks[0] : null;
+  var totalTracksLength = previousTracks.length + 1 + upcomingTracks.length;
+  var currentTrackIndex = previousTracks.length + 1; 
+
+
+  if (previousTracks.length === 0 && upcomingTracks.length === 0) {
+      totalTracksLength = 1; 
+      currentTrackIndex = 1;
+  } else if (previousTracks.length === 0) {
+      currentTrackIndex = 1; 
+  } else if (upcomingTracks.length === 0) {
+      currentTrackIndex = previousTracks.length + 1;
+  }
+
+  const musicDuration = currentTrack.duration;
+  const musicViews = formatNumber(currentTrack.views);
+  const musicAddedBy = currentTrack.requestedBy;
+
+  var description = `**Information sur le morceau**
+  > - Durée: ***${musicDuration}***
+  > - Vues: ***${musicViews}***
+  > - Ajouté par: ***${musicAddedBy}***
+
+  **File d'attente (${currentTrackIndex}/${totalTracksLength})**\n`;
+
+  if (previousTrack) {description += `> ${previousTrack.title}\n`;}
+  description += `> > **${currentTrack.title}**\n`;
+  if (nextTrack) {description += `> ${nextTrack.title}\n`;}
+
+  if (currentLyrics) {
+    description += `\n**Lyrics**\n`
+  if (previousLyrics) {description += `> ${previousLyrics}\n`;}
+  if (currentLyrics) {description += `> > **${currentLyrics}**\n`;}
+  if (nextLyrics) {description += `> ${nextLyrics}\n`;}
+
+  }
 
   return new EmbedBuilder()
     .setColor(colors.info)
-    .setTitle(`🎶 **${music.cleanTitle}**`)
-    .setURL(music.url)
-    .setThumbnail(music.thumbnail)
-    .addFields(fields)
-    .setTimestamp()
-}
-
-function createLyricsEmbed(lyrics=null) {
-
-  const SyncedLyrics = lyrics || 'Non disponible';
-
-  return new EmbedBuilder()
-    .setColor(colors.info)
-    .setTitle('🎤 Lyrics synchronisées 🎤')
-    .setDescription(SyncedLyrics);
+    .setTitle(`🎶 **${currentTrack.cleanTitle}**`)
+    .setDescription(description)
+    .setURL(currentTrack.url)
+    .setImage(currentTrack.thumbnail)
+    //.setThumbnail("https://cdn.discordapp.com/emojis/1301712131296858204.gif?size=96&quality=lossless")
 }
 
 function createGameEmbed(game, isUpcoming) {
@@ -149,7 +183,6 @@ function createQueueEmbed(previousTracksQueue, currentTrack, upcomingTracksQueue
 
 module.exports = {
   createQueueEmbed,
-  createLyricsEmbed,
   createMusicEmbed,
   createSuccessEmbed,
   createErrorEmbed,
