@@ -78,11 +78,11 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     Configurez UptimeRobot pour pinger l'URL de votre application Heroku toutes les 5 minutes afin de la maintenir active.
 
 ## Structure du Projet
-- [index.js](http://_vscodecontentref_/0) : fichier principal où le bot est initialisé.
-- [commands](http://_vscodecontentref_/1) : contient les fichiers de commandes slash personnalisées.
-- [events](http://_vscodecontentref_/2) : contient les événements auxquels le bot réagit.
-- [utils](http://_vscodecontentref_/3) : contient des fonctions utilitaires.
-- [templates](http://_vscodecontentref_/4) : gestion des messages formatés en embed pour une meilleure présentation sur Discord.
+- [index.js]: fichier principal où le bot est initialisé.
+- [commands]: contient les fichiers de commandes slash personnalisées.
+- [events]: contient les événements auxquels le bot réagit.
+- [utils]: contient des fonctions utilitaires.
+- [templates]: gestion des messages formatés en embed pour une meilleure présentation sur Discord.
 
 ## Technologies utilisées
 - **Discord.js** : pour l'interaction avec l'API Discord.
