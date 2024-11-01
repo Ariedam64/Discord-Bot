@@ -82,6 +82,7 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
 - [commands]: contient les fichiers de commandes slash personnalisées.
 - [events]: contient les événements auxquels le bot réagit.
 - [utils]: contient des fonctions utilitaires.
+- [handlers]: contient les gestionnaires pour les commandes, événements, interactions et le lecteur de musique.
 - [templates]: gestion des messages formatés en embed pour une meilleure présentation sur Discord.
 
 ## Technologies utilisées
