@@ -1,4 +1,6 @@
-function cesarEncode(text, shift) {
+const { createSuccessEmbed } = require("../../templates/embedTemplates");
+
+async function cesarEncode(text, shift, interaction) {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
     const shiftedText = text.toLowerCase();
     let encodedText = '';
@@ -15,11 +17,17 @@ function cesarEncode(text, shift) {
         encodedText += currentChar;
       }
     }
-  
-    return encodedText;
+
+    const embed = createSuccessEmbed(
+      'Texte encodé avec le chiffre de César',
+      `Texte original : \`${text}\`\nDécalage : \`${shift}\`\nTexte encodé : \`${encodedText}\``
+    );
+
+    await interaction.reply({ embeds: [embed] });
+
   }
 
-  function cesarDecode(text, shift) {
+  async function cesarDecode(text, shift, interaction) {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
     const shiftedText = text.toLowerCase();
     let decodedText = '';
@@ -35,11 +43,37 @@ function cesarEncode(text, shift) {
         decodedText += currentChar;
       }
     }
-  
-    return decodedText;
+
+    const embed = createSuccessEmbed(
+      'Texte décodé avec le chiffre de César',
+      `Texte chiffré : \`${text}\`\nDécalage : \`${shift}\`\nTexte décodé : \`${decodedText}\``
+    );
+
+    await interaction.reply({ embeds: [embed] });
   }
 
-  function cesarBruteforce(text) {
+  function splitBruteForceDescription(results, maxLength) {
+
+    let desc = '';
+    results.forEach(result => {
+      desc += `Décalage : \`${result.shift}\`\nTexte décodé : \`${result.decodedText}\`\n\n`;
+    });
+
+    const parts = [];
+    while (desc.length > maxLength) {
+      let part = desc.slice(0, maxLength);
+      const lastNewline = part.lastIndexOf('\n'); 
+      if (lastNewline !== -1) {
+        part = desc.slice(0, lastNewline);
+      }
+      parts.push(part);
+      desc = desc.slice(part.length).trim();
+    }
+    parts.push(desc); 
+    return parts;
+  }
+
+  async function cesarBruteforce(text, interaction) {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
     const shiftedText = text.toLowerCase();
     let results = [];
@@ -64,8 +98,23 @@ function cesarEncode(text, shift) {
         decodedText: decodedText,
       });
     }
-  
-    return results;
+
+    const parts = splitBruteForceDescription(results, 2048);
+
+    const embed = createSuccessEmbed(
+      'Résultats du bruteforce du chiffre de César',
+      parts[0]
+    );
+    await interaction.reply({ embeds: [embed] });
+
+    for (let i = 1; i < parts.length; i++) {
+      const embedPart = createSuccessEmbed(
+        `Résultats - partie ${i + 1}`,
+        parts[i]
+      );
+      await interaction.followUp({ embeds: [embedPart] });
+    }
   }
-  
+
+ 
   module.exports = { cesarEncode, cesarDecode, cesarBruteforce };
