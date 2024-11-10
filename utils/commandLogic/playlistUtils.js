@@ -11,6 +11,7 @@ function loadPlaylists() {
         playlists = JSON.parse(fs.readFileSync(playlistPath, 'utf-8'));
     } else {
         playlists = { servers: [] };
+        savePlaylists();
     }
 }
 
@@ -185,8 +186,6 @@ async function playPlaylist(serverId, playlistName, interaction) {
         }
     }
 }
-
-
 
 async function getVideoTitle(url) {
     try {
