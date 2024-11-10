@@ -83,6 +83,27 @@ async function addTrackToPlaylist(serverId, memberId, playlistName, videoUrl) {
     return { success: true, message: `La musique a été ajoutée à la playlist "${playlistName}".` };
 }
 
+function deletePlaylist(serverId, memberId, playlistName) {
+    let server = playlists.servers.find(s => s.serverId === serverId);
+    if (!server) {
+        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
+    }
+
+    let playlistIndex = server.playlists.findIndex(p => p.name === playlistName);
+    if (playlistIndex === -1) {
+        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+    }
+
+    let creator = server.playlists[playlistIndex].creator;
+    if (creator !== memberId) {
+        return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer cette playlist.' };
+    }
+
+    server.playlists.splice(playlistIndex, 1);
+    savePlaylists();
+    return { success: true, message: `La playlist "${playlistName}" a été supprimée.` };
+}
+
 async function getVideoTitle(url) {
     try {
         const video = await ytdl.getBasicInfo(url);
@@ -98,5 +119,6 @@ module.exports = {
     savePlaylists,
     getPlaylists,
     createPlaylist,
-    addTrackToPlaylist
+    addTrackToPlaylist,
+    deletePlaylist
 };

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createPlaylist, addTrackToPlaylist } = require('../../utils/commandLogic/playlistUtils');
+const { createPlaylist, addTrackToPlaylist, deletePlaylist } = require('../../utils/commandLogic/playlistUtils');
 const { createSuccessEmbed, createErrorEmbed } = require('../../templates/embedTemplates');
 
 module.exports = {
@@ -71,6 +71,13 @@ module.exports = {
         }
         break;
       case 'delete':
+        var playlistName = interaction.options.getString('name');
+        var result = deletePlaylist(guildId, memberId, playlistName);
+        if (result.success) {
+          await interaction.reply({ embeds: [createSuccessEmbed(result.message)], ephemeral: true });
+        } else {
+          await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
+        }
         break;
       case 'show':
         break;
