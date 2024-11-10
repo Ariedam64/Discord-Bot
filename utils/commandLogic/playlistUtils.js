@@ -104,6 +104,44 @@ function deletePlaylist(serverId, memberId, playlistName) {
     return { success: true, message: `La playlist "${playlistName}" a été supprimée.` };
 }
 
+function removeTrackFromPlaylist(serverId, memberId, playlistName, videoUrl = null, videoName = null, videoPosition = null) {
+    let server = playlists.servers.find(s => s.serverId === serverId);
+    if (!server) {
+        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
+    }
+
+    let playlist = server.playlists.find(p => p.name === playlistName);
+    if (!playlist) {
+        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+    }
+
+    let creator = playlist.creator;
+    if (creator !== memberId) {
+        return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer une musique de cette playlist.' };
+    }
+
+    if (videoUrl) {
+        let videoIndex = playlist.videos.findIndex(v => v.url === videoUrl);
+        if (videoIndex === -1) {
+            return { success: false, message: 'La vidéo n\'est pas dans la playlist.' };
+        }
+    } else if (videoName) {
+        let videoIndex = playlist.videos.findIndex(v => v.title === videoName);
+        if (videoIndex === -1) {
+            return { success: false, message: 'La vidéo n\'est pas dans la playlist.' };
+        }
+    } else if (videoPosition) {
+        videoIndex = videoPosition - 1;
+        if (videoPosition < 1 || videoPosition > playlist.videos.length) {
+            return { success: false, message: 'Position de la vidéo invalide.' };
+        }
+    }
+
+    playlist.videos.splice(videoIndex, 1);
+    savePlaylists();
+    return { success: true, message: 'La musique a été supprimée de la playlist.' };
+}
+
 async function getVideoTitle(url) {
     try {
         const video = await ytdl.getBasicInfo(url);
@@ -120,5 +158,6 @@ module.exports = {
     getPlaylists,
     createPlaylist,
     addTrackToPlaylist,
-    deletePlaylist
+    deletePlaylist,
+    removeTrackFromPlaylist
 };

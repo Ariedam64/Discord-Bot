@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createPlaylist, addTrackToPlaylist, deletePlaylist } = require('../../utils/commandLogic/playlistUtils');
+const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist } = require('../../utils/commandLogic/playlistUtils');
 const { createSuccessEmbed, createErrorEmbed } = require('../../templates/embedTemplates');
 
 module.exports = {
@@ -40,7 +40,33 @@ module.exports = {
             .setDescription('URL de la musique')
             .setRequired(true)
         )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('remove')
+        .setDescription('Supprimer une musique d\'une playlist')
+        .addStringOption(option =>
+          option.setName('name')
+            .setDescription('Nom de la playlist')
+            .setRequired(true)
+        )
+        .addIntegerOption(option =>
+          option.setName('position')
+            .setDescription('Position de la musique dans la playlist')
+            .setRequired(false)
+        )
+        .addStringOption(option =>
+          option.setName('url')
+            .setDescription('URL de la musique')
+            .setRequired(false)
+        )
+        .addStringOption(option =>
+          option.setName('title')
+            .setDescription('Titre de la musique')
+            .setRequired(false)
+        )
     ),
+
 
   async execute(interaction) {
 
@@ -59,8 +85,25 @@ module.exports = {
           await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
         }
         break;
+
       case 'remove':
+        var playlistName = interaction.options.getString('name');
+        var videoUrl = interaction.options.getString('url');
+        var videoTitle = interaction.options.getString('title');
+        var position = interaction.options.getInteger('position');
+
+        if (!videoUrl && !videoTitle && !position) {
+          return await interaction.reply({ embeds: [createErrorEmbed('Vous devez spécifier une URL, un titre ou une position de la musique à supprimer.')], ephemeral: true });
+        }
+
+        var result = await removeTrackFromPlaylist(guildId, memberId, playlistName, videoUrl, videoTitle, position);
+        if (result.success) {
+          await interaction.reply({ embeds: [createSuccessEmbed(result.message)], ephemeral: true });
+        } else {
+          await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
+        }
         break;
+
       case 'create':
         var playlistName = interaction.options.getString('name');
         var result = createPlaylist(guildId, memberId, playlistName);
@@ -70,6 +113,7 @@ module.exports = {
           await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
         }
         break;
+
       case 'delete':
         var playlistName = interaction.options.getString('name');
         var result = deletePlaylist(guildId, memberId, playlistName);
@@ -79,6 +123,7 @@ module.exports = {
           await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
         }
         break;
+
       case 'show':
         break;
     }
