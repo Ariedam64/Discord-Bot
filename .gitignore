@@ -6,4 +6,3 @@ node_modules/
 
 # Fichier config contenant des informations sensibles
 .env
-playlist.json

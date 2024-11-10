@@ -1,0 +1,27 @@
+{
+    "servers": [
+        {
+            "serverId": "936966070181433454",
+            "playlists": [
+                {
+                    "name": "slowed + reverb",
+                    "creator": "128202956574162945",
+                    "videos": [
+                        {
+                            "title": "PNL - Naha (slowed + reverb)",
+                            "url": "https://www.youtube.com/watch?v=1FDkS96TH2g"
+                        },
+                        {
+                            "title": "DA Uzi - Michael Jordan (slowed + reverb)",
+                            "url": "https://www.youtube.com/watch?v=jXEB3_3B55Y"
+                        },
+                        {
+                            "title": "Werenoi - Chemin d’or (slowed + reverb)",
+                            "url": "https://www.youtube.com/watch?v=ZHBQ6vEwnOI"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
