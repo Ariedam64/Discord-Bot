@@ -2,13 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const ytdl = require('ytdl-core-discord');
 
-let playlist = {};
+let playlists = {};
 const playlistPath = path.resolve(__dirname, '../../playlist.json');
 
 function loadPlaylists() {
     if (fs.existsSync(playlistPath)) {
         playlists = JSON.parse(fs.readFileSync(playlistPath, 'utf-8'));
-        console.log(playlists);
     } else {
         playlists = { servers: [] };
     }
@@ -25,7 +24,7 @@ function savePlaylists() {
     playlists = JSON.parse(fs.readFileSync(playlistPath, 'utf-8'));
 }
 function getPlaylists() {
-    return playlist;
+    return playlists;
 }
 
 loadPlaylists();
@@ -159,5 +158,6 @@ module.exports = {
     createPlaylist,
     addTrackToPlaylist,
     deletePlaylist,
-    removeTrackFromPlaylist
+    removeTrackFromPlaylist,
+    playlists
 };

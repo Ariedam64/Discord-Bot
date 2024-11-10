@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle  } = require('discord.js');
 const { colors } = require('../config.json'); 
 
 function formatNumber(num) {
@@ -50,7 +50,6 @@ function createWarningEmbed(title, description) {
 }
 
 function createMusicEmbed(previousTracksQueue, currentTrack, upcomingTracksQueue, previousLyrics, currentLyrics, nextLyrics) {
-
 
   var previousTracks = [];
   var upcomingTracks = [];
@@ -181,6 +180,71 @@ function createQueueEmbed(previousTracksQueue, currentTrack, upcomingTracksQueue
     .setTimestamp();
 }
 
+async function createPlaylistEmbed(playlists, guild) {
+  const groupedPlaylists = playlists.reduce((acc, playlist) => {
+    if (!acc[playlist.creator]) {
+      acc[playlist.creator] = [];
+    }
+    acc[playlist.creator].push(playlist);
+    return acc;
+  }, {});
+
+  const fields = await Promise.all(Object.entries(groupedPlaylists).map(async ([creator, userPlaylists]) => {
+    const creatorUser = await guild.members.fetch(creator);
+    const playlistDescriptions = userPlaylists.map(playlist => ` - ${playlist.name} [${playlist.videos.length}]`).join('\n');
+    return {
+      name: `Playlists de ${creatorUser.user.globalName}`,
+      value: playlistDescriptions,
+      inline: false
+    };
+  }));
+
+  return new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle('🎶 Playlists 🎶')
+    .addFields(fields)
+    .setTimestamp();
+}
+
+function createPlaylistDetailEmbed(playlist, page = 1) {
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(playlist.videos.length / itemsPerPage);
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const videos = playlist.videos.slice(startIndex, endIndex);
+
+  const fields = videos.map((video, index) => {
+    return {
+      name: `${startIndex + index + 1}. ${video.title}`,
+      value: `${video.url}`,
+      inline: false
+    };
+  });
+
+  const embed = new EmbedBuilder()
+    .setColor(colors.info)
+    .setTitle(`🎶 Playlist ${playlist.name} 🎶`)
+    .addFields(fields)
+    .setFooter({ text: `Page ${page} sur ${totalPages}` })
+    .setTimestamp();
+
+  const row = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId(`playlist_prev_${playlist.name}_${page}`)
+        .setEmoji('⬅️')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(page === 1),
+      new ButtonBuilder()
+        .setCustomId(`playlist_next_${playlist.name}_${page}`)
+        .setEmoji('➡️')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(page === totalPages)
+    );
+
+  return { embed, row };
+}
+
 module.exports = {
   createQueueEmbed,
   createMusicEmbed,
@@ -190,5 +254,7 @@ module.exports = {
   createWarningEmbed,
   createImageEmbed,
   createGameEmbed,
-  createDetailAnimeEmbed
+  createDetailAnimeEmbed,
+  createPlaylistEmbed,
+  createPlaylistDetailEmbed
 };
