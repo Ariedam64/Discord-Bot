@@ -141,18 +141,20 @@ class MusicPlayer {
         }
     }
 
-    async addSongToQueue(song, interaction) {
+    async addSongToQueue(song, interaction, isPlaylist = false) {
         await this.queue.addTrack(song);
         this.updateMusicEmbed(); 
         this.updateEmbedComponents();
-        const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
-        await interaction.reply({ embeds: [successEmbed], ephemeral: false });
-        await wait(5_000);
-        try {
-            await interaction.deleteReply(); 
-        } catch (error) {
-            console.error('Erreur addSongToQueue: Suppression de la réponse :', error);
-        }
+        if (!isPlaylist) {
+            const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
+            await interaction.reply({ embeds: [successEmbed], ephemeral: false });
+            await wait(5_000);
+            try {
+                await interaction.deleteReply(); 
+            } catch (error) {
+                console.error('Erreur addSongToQueue: Suppression de la réponse :', error);
+            }
+        }  
     }
     
     async updateMusicEmbed() {

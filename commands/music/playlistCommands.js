@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playlists } = require('../../utils/commandLogic/playlistUtils');
+const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playPlaylist,playlists } = require('../../utils/commandLogic/playlistUtils');
 const { createSuccessEmbed, createErrorEmbed, createPlaylistEmbed, createPlaylistDetailEmbed } = require('../../templates/embedTemplates');
 
 module.exports = {
@@ -75,6 +75,16 @@ module.exports = {
       subcommand
         .setName('detail')
         .setDescription('Afficher le détail d\'une playlist')
+        .addStringOption(option =>
+          option.setName('name')
+            .setDescription('Nom de la playlist')
+            .setRequired(true)
+        )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('play')
+        .setDescription('Jouer une playlist')
         .addStringOption(option =>
           option.setName('name')
             .setDescription('Nom de la playlist')
@@ -163,6 +173,15 @@ module.exports = {
 
         var { embed, row } = createPlaylistDetailEmbed(playlist);
         await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+        break;
+
+      case 'play':
+        var playlistName = interaction.options.getString('name');
+    
+        var result = await playPlaylist(guildId, playlistName, interaction);
+        /*if (!result.success) {
+          await interaction.reply({ content: result.message, ephemeral: true });
+        } */
         break;
     }
   },

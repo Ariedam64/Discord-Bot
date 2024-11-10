@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ytdl = require('ytdl-core-discord');
+const { MusicPlayer, players } = require('./musicUtils');
 
 let playlists = {};
 const playlistPath = path.resolve(__dirname, '../../playlist.json');
@@ -141,6 +142,52 @@ function removeTrackFromPlaylist(serverId, memberId, playlistName, videoUrl = nu
     return { success: true, message: 'La musique a été supprimée de la playlist.' };
 }
 
+async function playPlaylist(serverId, playlistName, interaction) {
+    const playlists = getPlaylists();
+    const server = playlists.servers.find(s => s.serverId === serverId);
+
+    if (!server) {
+        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
+    }
+
+    const playlist = server.playlists.find(p => p.name === playlistName);
+    if (!playlist) {
+        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+    }
+
+    const musicPlayer = players[interaction.guild.id] || new MusicPlayer(interaction);
+    players[interaction.guild.id] = musicPlayer;
+
+    if (!musicPlayer.queue) {
+        await musicPlayer.initQueue(interaction.guild);
+    }
+
+    if (!musicPlayer.voiceChannel) {
+        return { success: false, message: 'Vous devez être dans un salon vocal pour utiliser cette commande.' };
+    }
+
+    if (!musicPlayer.queue.connection) {
+        await musicPlayer.connectToVoiceChannel();
+    }
+
+    if (musicPlayer.isPlaying) {
+        await musicPlayer.stopPlaying(interaction);
+    }
+
+    for (const video of playlist.videos) {
+        const song = await musicPlayer.searchYoutubeMusic(video.url);
+        if (song) {
+            if (!musicPlayer.isPlaying) {
+                await musicPlayer.playFirstSong(song, interaction);
+            } else {
+                await musicPlayer.addSongToQueue(song, interaction, true);
+            }
+        }
+    }
+}
+
+
+
 async function getVideoTitle(url) {
     try {
         const video = await ytdl.getBasicInfo(url);
@@ -159,5 +206,6 @@ module.exports = {
     addTrackToPlaylist,
     deletePlaylist,
     removeTrackFromPlaylist,
-    playlists
+    playPlaylist,
+    playlists,
 };
