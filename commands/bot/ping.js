@@ -19,7 +19,6 @@ module.exports = {
     let dynosInfo = `- Erreur: \`Impossible de récupérer les dynos d\'Heroku\``;
     let uptimeStatus = '- Erreur: \`Impossible de récupérer le moniteur d\'UptimeRobot.\`';
     let uptimeResponseTime = '';
-    let averageResponseTime = '';
 
     function formatElapsedTime(minutesElapsed) {
       const days = Math.floor(minutesElapsed / 1440);
