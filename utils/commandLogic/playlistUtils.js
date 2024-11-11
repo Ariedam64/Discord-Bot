@@ -2,156 +2,98 @@ const fs = require('fs');
 const path = require('path');
 const ytdl = require('ytdl-core-discord');
 const { MusicPlayer, players } = require('./musicUtils');
+const { Playlist, Video } = require('../../stockage/models/playlist');
 
 let playlists = {};
 const playlistPath = path.resolve(__dirname, '../../playlist.json');
 
-function loadPlaylists() {
-    if (fs.existsSync(playlistPath)) {
-        playlists = JSON.parse(fs.readFileSync(playlistPath, 'utf-8'));
-    } else {
-        playlists = { servers: [] };
-        savePlaylists();
-    }
+async function loadPlaylists() {
+    return await Playlist.findAll({ include: 'songs' });
 }
 
-function savePlaylists() {
-    const replace = (key, value) => {
-        if (typeof value === 'bigint') {
-            return value.toString();
-        }
-        return value;
-    };
-    fs.writeFileSync(playlistPath, JSON.stringify(playlists, replace, 4));
-    playlists = JSON.parse(fs.readFileSync(playlistPath, 'utf-8'));
-}
-function getPlaylists() {
-    return playlists;
-}
-
-loadPlaylists();
-
-function createPlaylist(serverId, memberId, playlistName) {
-    let server = playlists.servers.find(s => s.serverId === serverId);
-    if (!server) {
-        server = { serverId: serverId, playlists: [] };
-        playlists.servers.push(server);
+async function createPlaylist(serverId, memberId, playlistName) {
+    const existingPlaylist = await Playlist.findOne({ where: { serverId, name: playlistName } });
+    if (existingPlaylist) {
+      return { success: false, message: 'Une playlist avec ce nom existe déjà.' };
     }
-
-    if (server.playlists.some(p => p.name === playlistName)) {
-        return { success: false, message: 'Une playlist avec ce nom existe déjà.' };
-    }
-
-    const newPlaylist = {
-        name: playlistName,
-        creator: memberId,
-        videos: []
-    };
-    server.playlists.push(newPlaylist);
-
-    savePlaylists();
+  
+    const newPlaylist = await Playlist.create({
+      serverId,
+      name: playlistName,
+      creator: memberId,
+    });
+  
     return { success: true, message: `La playlist "${playlistName}" a été créée.` };
 }
 
 async function addTrackToPlaylist(serverId, memberId, playlistName, videoUrl) {
-    let server = playlists.servers.find(s => s.serverId === serverId);
-    if (!server) {
-        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
-    }
-
-    let playlist = server.playlists.find(p => p.name === playlistName);
+    const playlist = await Playlist.findOne({ where: { serverId, name: playlistName }, include: 'songs' });
     if (!playlist) {
-        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+      return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
     }
-
-    let creator = playlist.creator;
-    if (creator !== memberId) {
-        return { success: false, message: 'Vous n\'êtes pas autorisé à ajouter une musique à cette playlist.' };
+  
+    if (playlist.creator !== memberId) {
+      return { success: false, message: 'Vous n\'êtes pas autorisé à ajouter une musique à cette playlist.' };
     }
-
-    if (!ytdl.validateURL(videoUrl)) {
-        return { success: false, message: 'URL de la vidéo invalide.' };
+  
+    if (playlist.songs.some(s => s.url === videoUrl)) {
+      return { success: false, message: 'La musique est déjà dans la playlist.' };
     }
-
-    if (playlist.videos.some(v => v.url === videoUrl)) {
-        return { success: false, message: 'La vidéo est déjà dans la playlist.' };
-    }
-
-    const videoTitle = await getVideoTitle(videoUrl)
-
-    playlist.videos.push({ title: videoTitle , url: videoUrl });
-    savePlaylists();
+  
+    const videoTitle = await getVideoTitle(videoUrl);
+    await Song.create({ title: videoTitle, url: videoUrl, PlaylistId: playlist.id });
+  
     return { success: true, message: `La musique a été ajoutée à la playlist "${playlistName}".` };
 }
 
-function deletePlaylist(serverId, memberId, playlistName) {
-    let server = playlists.servers.find(s => s.serverId === serverId);
-    if (!server) {
-        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
+async function deletePlaylist(serverId, memberId, playlistName) {
+    const playlist = await Playlist.findOne({ where: { serverId, name: playlistName } });
+    if (!playlist) {
+      return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
     }
-
-    let playlistIndex = server.playlists.findIndex(p => p.name === playlistName);
-    if (playlistIndex === -1) {
-        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+  
+    if (playlist.creator !== memberId) {
+      return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer cette playlist.' };
     }
-
-    let creator = server.playlists[playlistIndex].creator;
-    if (creator !== memberId) {
-        return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer cette playlist.' };
-    }
-
-    server.playlists.splice(playlistIndex, 1);
-    savePlaylists();
+  
+    await playlist.destroy();
     return { success: true, message: `La playlist "${playlistName}" a été supprimée.` };
 }
 
-function removeTrackFromPlaylist(serverId, memberId, playlistName, videoUrl = null, videoName = null, videoPosition = null) {
-    let server = playlists.servers.find(s => s.serverId === serverId);
-    if (!server) {
-        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
-    }
-
-    let playlist = server.playlists.find(p => p.name === playlistName);
+async function removeTrackFromPlaylist(serverId, memberId, playlistName, videoUrl = null, videoName = null, videoPosition = null) {
+    const playlist = await Playlist.findOne({ where: { serverId, name: playlistName }, include: 'videos' });
     if (!playlist) {
-        return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+      return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
     }
-
-    let creator = playlist.creator;
-    if (creator !== memberId) {
-        return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer une musique de cette playlist.' };
+  
+    if (playlist.creator !== memberId) {
+      return { success: false, message: 'Vous n\'êtes pas autorisé à supprimer une musique de cette playlist.' };
     }
-
+  
+    let song;
     if (videoUrl) {
-        let videoIndex = playlist.videos.findIndex(v => v.url === videoUrl);
-        if (videoIndex === -1) {
-            return { success: false, message: 'La vidéo n\'est pas dans la playlist.' };
-        }
+        song = playlist.songs.find(s => s.url === videoUrl);
     } else if (videoName) {
-        let videoIndex = playlist.videos.findIndex(v => v.title === videoName);
-        if (videoIndex === -1) {
-            return { success: false, message: 'La vidéo n\'est pas dans la playlist.' };
-        }
+        song = playlist.songs.find(s => s.title === videoName);
     } else if (videoPosition) {
-        videoIndex = videoPosition - 1;
-        if (videoPosition < 1 || videoPosition > playlist.videos.length) {
-            return { success: false, message: 'Position de la vidéo invalide.' };
-        }
+        song = playlist.songs[videoPosition - 1];
     }
-
-    playlist.videos.splice(videoIndex, 1);
-    savePlaylists();
+  
+    if (!song) {
+      return { success: false, message: 'La vidéo n\'est pas dans la playlist.' };
+    }
+  
+    await song.destroy();
     return { success: true, message: 'La musique a été supprimée de la playlist.' };
 }
 
 async function playPlaylist(serverId, playlistName, interaction) {
-    const playlists = getPlaylists();
-    const server = playlists.servers.find(s => s.serverId === serverId);
 
-    if (!server) {
-        return { success: false, message: `Aucune playlist trouvée pour le serveur ${serverId}.` };
-    }
+    const playlist = await Playlist.findOne({
+        where: { serverId, name: playlistName },
+        include: 'songs'
+    });
 
-    const playlist = server.playlists.find(p => p.name === playlistName);
     if (!playlist) {
         return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
     }
@@ -175,16 +117,24 @@ async function playPlaylist(serverId, playlistName, interaction) {
         await musicPlayer.stopPlaying(interaction);
     }
 
-    for (const video of playlist.videos) {
-        const song = await musicPlayer.searchYoutubeMusic(video.url);
-        if (song) {
-            if (!musicPlayer.isPlaying) {
-                await musicPlayer.playFirstSong(song, interaction);
+    for (const song of playlist.songs) {
+        try {
+            const song = await musicPlayer.searchYoutubeMusic(song.url);
+            if (song) {
+                if (!musicPlayer.isPlaying) {
+                    await musicPlayer.playFirstSong(song, interaction);
+                } else {
+                    await musicPlayer.addSongToQueue(song, interaction, true);
+                }
             } else {
-                await musicPlayer.addSongToQueue(song, interaction, true);
+                console.error(`Erreur: Impossible de trouver la chanson pour l'URL ${song.url}`);
             }
+        } catch (error) {
+            console.error(`Erreur lors de la recherche de la chanson pour l'URL ${song.url}:`, error);
         }
     }
+
+    return { success: true, message: `La playlist "${playlistName}" a été jouée avec succès.` };
 }
 
 async function getVideoTitle(url) {
