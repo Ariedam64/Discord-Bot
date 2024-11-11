@@ -2,9 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { OpenAI } = require('openai');
 const { createImageEmbed, createErrorEmbed, createSuccessEmbed } = require('../../templates/embedTemplates');
 const { generateImage, changeBotContext } = require('../../utils/GPTUtils');
-
 require('dotenv').config();
-
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -53,6 +51,9 @@ module.exports = {
     switch (subcommand) {
 
       case 'image':
+        if ( process.env.DISCORD_PERSONAL_ID !== interaction.user.id ) {
+          return await interaction.editReply({ embeds: [createErrorEmbed('Vous n\'avez pas la permission d\'utiliser cette commande.')] });
+        }
         const imageDescription = interaction.options.getString('image_description');
         const urlImage = await generateImage(imageDescription);
         if (!urlImage) {
