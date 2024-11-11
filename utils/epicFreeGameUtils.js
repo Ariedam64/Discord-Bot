@@ -49,6 +49,16 @@ const sendGamesToChannel = async (client, channelName) => {
         return;
     }
 
+    //Check if the last message is the same as the last game
+    const lastMessage = await channel.messages.fetch({ limit: 1 });
+    const lastMessageContent = lastMessage.first()?.embeds[0]?.title;
+    const lastGameContent = nextGames[nextGames.length-1].title;
+    if (lastMessageContent === lastGameContent) {
+        //No new games
+        return;
+    }
+    
+
     for (const game of currentGames) {
         const embed = createGameEmbed(game, false);
         await channel.send({ embeds: [embed] });
