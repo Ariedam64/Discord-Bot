@@ -8,6 +8,7 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
 - NPM (ou Yarn)
 - Un compte Heroku
 - Un compte UptimeRobot (si vous souhaitez maintenir le bot actif sur Heroku)
+- Une base de données PostgreSQL
 
 ## Fonctionnalités principales
 - **Réponses automatiques GPT** : le bot peut répondre automatiquement aux messages qui le mentionnent, en utilisant OpenAI.
@@ -32,10 +33,10 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     DISCORD_TOKEN=ton-token-discord
     OPENAI_API_KEY=ta-cle-openai
     CLIENT_ID=ton-client-id
-    GUILD_ID=ton-guild-id
     HEROKU_API_KEY=ta-cle-heroku
     HEROKU_APP_NAME=nom-de-ton-app-heroku
     UPTIME_ROBOT_API_KEY=ta-cle-uptimerobot
+    DATABASE_URL=ton-url-de-base-de-donnees
     ```
 4. Déploiement local
     Pour lancer le bot en local, exécutez la commande suivante :
@@ -57,10 +58,10 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
     heroku config:set DISCORD_TOKEN=ton-token-discord
     heroku config:set OPENAI_API_KEY=ta-cle-openai
     heroku config:set CLIENT_ID=ton-client-id
-    heroku config:set GUILD_ID=ton-guild-id
     heroku config:set HEROKU_API_KEY=ta-cle-heroku
     heroku config:set HEROKU_APP_NAME=nom-de-ton-app-heroku
     heroku config:set UPTIME_ROBOT_API_KEY=ta-cle-uptimerobot
+    heroku config:set DATABASE_URL=ton-url-de-base-de-donnees
     ```
 
 4. Démarrez les dynos sur Heroku Exécutez les commandes suivantes pour démarrer les dynos web et worker sur Heroku :
@@ -84,12 +85,15 @@ Arie est un bot Discord multifonction que vous pouvez utiliser pour des interact
 - [utils]: contient des fonctions utilitaires.
 - [handlers]: contient les gestionnaires pour les commandes, événements, interactions et le lecteur de musique.
 - [templates]: gestion des messages formatés en embed pour une meilleure présentation sur Discord.
+- [stockage]: contient les fichiers relatifs à la base de données.
 
 ## Technologies utilisées
 - **Discord.js** : pour l'interaction avec l'API Discord.
 - **Express** : utilisé pour créer un serveur léger pour les pings UptimeRobot.
 - **Heroku** : plateforme d'hébergement du bot.
 - **OpenAI API** : pour les réponses GPT aux utilisateurs.
+- **Sequelize** : ORM pour interagir avec la base de données PostgreSQL.
+- **PostgreSQL** : base de données relationnelle utilisée pour stocker les données du bot.
 
 ## Contribution
 Les contributions sont les bienvenues ! N'hésitez pas à soumettre une issue ou à ouvrir une pull request.
