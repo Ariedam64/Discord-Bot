@@ -191,7 +191,7 @@ async function createPlaylistEmbed(playlists, guild) {
 
   const fields = await Promise.all(Object.entries(groupedPlaylists).map(async ([creator, userPlaylists]) => {
     const creatorUser = await guild.members.fetch(creator);
-    const playlistDescriptions = userPlaylists.map(playlist => ` - ${playlist.name} [${playlist.videos.length}]`).join('\n');
+    const playlistDescriptions = userPlaylists.map(playlist => ` - ${playlist.name} [${playlist.songs.length}]`).join('\n');
     return {
       name: `Playlists de ${creatorUser.user.globalName}`,
       value: playlistDescriptions,
@@ -208,10 +208,10 @@ async function createPlaylistEmbed(playlists, guild) {
 
 function createPlaylistDetailEmbed(playlist, page = 1) {
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(playlist.videos.length / itemsPerPage);
+  const totalPages = Math.ceil(playlist.songs.length / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const videos = playlist.videos.slice(startIndex, endIndex);
+  const videos = playlist.songs.slice(startIndex, endIndex);
 
   const fields = videos.map((video, index) => {
     return {

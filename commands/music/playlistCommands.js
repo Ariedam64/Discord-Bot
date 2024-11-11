@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playPlaylist,playlists } = require('../../utils/commandLogic/playlistUtils');
+const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playPlaylist, loadPlaylists } = require('../../utils/commandLogic/playlistUtils');
 const { createSuccessEmbed, createErrorEmbed, createPlaylistEmbed, createPlaylistDetailEmbed } = require('../../templates/embedTemplates');
 
 module.exports = {
@@ -130,7 +130,7 @@ module.exports = {
 
       case 'create':
         var playlistName = interaction.options.getString('name');
-        var result = createPlaylist(guildId, memberId, playlistName);
+        var result = await createPlaylist(guildId, memberId, playlistName);
         if (result.success) {
           await interaction.reply({ embeds: [createSuccessEmbed(result.message)], ephemeral: true });
         } else {
@@ -140,7 +140,7 @@ module.exports = {
 
       case 'delete':
         var playlistName = interaction.options.getString('name');
-        var result = deletePlaylist(guildId, memberId, playlistName);
+        var result = await deletePlaylist(guildId, memberId, playlistName);
         if (result.success) {
           await interaction.reply({ embeds: [createSuccessEmbed(result.message)], ephemeral: true });
         } else {
@@ -149,39 +149,33 @@ module.exports = {
         break;
 
       case 'show':
-        var server = playlists.servers.find(s => s.serverId === guildId);
-        if (!server) {
+        var playlists = await loadPlaylists();
+        var serverPlaylists = playlists.filter(p => p.serverId === guildId);
+        if (serverPlaylists.length === 0) {
           return await interaction.reply({ embeds: [createErrorEmbed(`Aucune playlist trouvée pour le serveur ${guildId}.`)], ephemeral: true });
         }
-
-        var playlistsList = server.playlists
-        var embed = await createPlaylistEmbed(playlistsList, interaction.guild);
+        var embed = await createPlaylistEmbed(serverPlaylists, interaction.guild);
         await interaction.reply({ embeds: [embed], ephemeral: true });
-
         break;
-
+      
       case 'detail':
-        var playlistName = interaction.options.getString('name');
-        var server = playlists.servers.find(s => s.serverId === guildId);
-        if (!server) {
-          return await interaction.reply({ embeds: [createErrorEmbed(`Aucune playlist trouvée pour le serveur ${guildId}.`)], ephemeral: true });
-        }
-        var playlist = server.playlists.find(p => p.name === playlistName);
-        if (!playlist) {
-          return await interaction.reply({ embeds: [createErrorEmbed(`Aucune playlist trouvée avec le nom ${playlistName}.`)], ephemeral: true });
-        } 
-
-        var { embed, row } = createPlaylistDetailEmbed(playlist);
-        await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
-        break;
+          var playlistName = interaction.options.getString('name');
+          var playlists = await loadPlaylists();
+          var playlist = playlists.find(p => p.serverId === guildId && p.name === playlistName);
+          if (!playlist) {
+              return await interaction.reply({ embeds: [createErrorEmbed(`Aucune playlist trouvée avec le nom ${playlistName}.`)], ephemeral: true });
+          }
+          var { embed, row } = createPlaylistDetailEmbed(playlist);
+          await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+          break;
 
       case 'play':
         var playlistName = interaction.options.getString('name');
     
         var result = await playPlaylist(guildId, playlistName, interaction);
-        /*if (!result.success) {
+        if (!result.success) {
           await interaction.reply({ content: result.message, ephemeral: true });
-        } */
+        } 
         break;
     }
   },

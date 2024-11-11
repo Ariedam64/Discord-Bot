@@ -2,10 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const ytdl = require('ytdl-core-discord');
 const { MusicPlayer, players } = require('./musicUtils');
-const { Playlist, Video } = require('../../stockage/models/playlist');
-
-let playlists = {};
-const playlistPath = path.resolve(__dirname, '../../playlist.json');
+const { Playlist, Song } = require('../../stockage/models/playlist');
 
 async function loadPlaylists() {
     return await Playlist.findAll({ include: 'songs' });
@@ -119,12 +116,12 @@ async function playPlaylist(serverId, playlistName, interaction) {
 
     for (const song of playlist.songs) {
         try {
-            const song = await musicPlayer.searchYoutubeMusic(song.url);
-            if (song) {
+            const foundedSong = await musicPlayer.searchYoutubeMusic(song.url);
+            if (foundedSong) {
                 if (!musicPlayer.isPlaying) {
-                    await musicPlayer.playFirstSong(song, interaction);
+                    await musicPlayer.playFirstSong(foundedSong, interaction);
                 } else {
-                    await musicPlayer.addSongToQueue(song, interaction, true);
+                    await musicPlayer.addSongToQueue(foundedSong, interaction, true);
                 }
             } else {
                 console.error(`Erreur: Impossible de trouver la chanson pour l'URL ${song.url}`);
@@ -149,12 +146,9 @@ async function getVideoTitle(url) {
   
 module.exports = {
     loadPlaylists,
-    savePlaylists,
-    getPlaylists,
     createPlaylist,
     addTrackToPlaylist,
     deletePlaylist,
     removeTrackFromPlaylist,
     playPlaylist,
-    playlists,
 };

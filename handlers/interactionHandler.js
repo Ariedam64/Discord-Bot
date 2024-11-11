@@ -1,5 +1,5 @@
 const { players } = require('../utils/commandLogic/musicUtils'); 
-const { getPlaylists } = require('../utils/commandLogic/playlistUtils');
+const { loadPlaylists } = require('../utils/commandLogic/playlistUtils');
 const { createErrorEmbed, createPlaylistDetailEmbed } = require('../templates/embedTemplates');
 
 module.exports = (client) => {
@@ -38,7 +38,7 @@ async function handleButton(interaction) {
 async function handlePlaylistButton(interaction, customId) {
   const [event, action, playlistName, page] = customId.split('_');
   const guildId = interaction.guild.id;
-  const playlists = getPlaylists();
+  const playlists = loadPlaylists();
   const server = playlists.servers.find(s => s.serverId === guildId);
 
   if (!server) {
