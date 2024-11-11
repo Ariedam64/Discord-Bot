@@ -24,8 +24,9 @@ class MusicPlayer {
 
         this.embedMessage = null;
 
+        this.musicChannel = process.env.MUSIC_CHANNEL;
         this.voiceChannel = interaction.member.voice.channel; 
-        this.textChannel = interaction.guild.channels.cache.find(c => c.name === 'music');
+        this.textChannel = interaction.guild.channels.cache.find(c => c.name === this.musicChannel);
 
         this.initPlayerEvents();
     }
@@ -145,7 +146,7 @@ class MusicPlayer {
         await this.queue.addTrack(song);
         this.updateMusicEmbed(); 
         this.updateEmbedComponents();
-        if (!isPlaylist) {
+        if (!isPlaylist) { 
             const successEmbed = createSuccessEmbed("Music",`La musique **${song.title}** a été ajoutée à la file d'attente.`);
             await interaction.reply({ embeds: [successEmbed], ephemeral: false });
             await wait(5_000);
@@ -289,7 +290,7 @@ class MusicPlayer {
     async startPlaying(url, interaction) {
 
         if (!this.textChannel) {
-            const errorEmbed = createErrorEmbed("Impossible de trouver le salon de texte 'music'.");
+            const errorEmbed = createErrorEmbed(`Impossible de trouver le salon de texte ${this.musicChannel}.`);
             return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
         if (!this.voiceChannel) {
