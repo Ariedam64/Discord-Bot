@@ -130,8 +130,22 @@ async function playPlaylist(serverId, playlistName, interaction) {
             console.error(`Erreur lors de la recherche de la chanson pour l'URL ${song.url}:`, error);
         }
     }
-
     return { success: true, message: `La playlist "${playlistName}" a été jouée avec succès.` };
+}
+
+async function renamePlaylist(serverId, memberId, playlistName, newPlaylistName) {
+    const playlist = await Playlist.findOne({ where: { serverId, name: playlistName } });
+    if (!playlist) {
+      return { success: false, message: `Aucune playlist trouvée avec le nom ${playlistName}.` };
+    }
+  
+    if (playlist.creator !== memberId) {
+      return { success: false, message: 'Vous n\'êtes pas autorisé à renommer cette playlist.' };
+    }
+  
+    playlist.name = newPlaylistName;
+    await playlist.save();
+    return { success: true, message: `La playlist a été renommée en "${newPlaylistName}".` };
 }
 
 async function getVideoTitle(url) {
@@ -151,4 +165,5 @@ module.exports = {
     deletePlaylist,
     removeTrackFromPlaylist,
     playPlaylist,
+    renamePlaylist
 };

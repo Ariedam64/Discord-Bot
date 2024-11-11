@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playPlaylist, loadPlaylists } = require('../../utils/commandLogic/playlistUtils');
+const { createPlaylist, addTrackToPlaylist, deletePlaylist, removeTrackFromPlaylist, playPlaylist, loadPlaylists, renamePlaylist } = require('../../utils/commandLogic/playlistUtils');
 const { createSuccessEmbed, createErrorEmbed, createPlaylistEmbed, createPlaylistDetailEmbed } = require('../../templates/embedTemplates');
 
 module.exports = {
@@ -90,6 +90,21 @@ module.exports = {
             .setDescription('Nom de la playlist')
             .setRequired(true)
         )
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('rename')
+        .setDescription('Renommer une playlist')
+        .addStringOption(option =>
+          option.setName('name')
+            .setDescription('Nom de la playlist')
+            .setRequired(true)
+        )
+        .addStringOption(option =>
+          option.setName('new_name')
+            .setDescription('Nouveau nom de la playlist')
+            .setRequired(true)
+        )
     ),
 
   async execute(interaction) {
@@ -171,11 +186,21 @@ module.exports = {
 
       case 'play':
         var playlistName = interaction.options.getString('name');
-    
         var result = await playPlaylist(guildId, playlistName, interaction);
         if (!result.success) {
           await interaction.reply({ content: result.message, ephemeral: true });
         } 
+        break;
+
+      case 'rename':
+        var playlistName = interaction.options.getString('name');
+        var newPlaylistName = interaction.options.getString('new_name');
+        var result = await renamePlaylist(guildId, memberId, playlistName, newPlaylistName);
+        if (result.success) {
+          await interaction.reply({ embeds: [createSuccessEmbed(result.message)], ephemeral: true });
+        } else {
+          await interaction.reply({ embeds: [createErrorEmbed(result.message)], ephemeral: true });
+        }
         break;
     }
   },
