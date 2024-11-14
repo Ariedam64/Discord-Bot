@@ -2,7 +2,19 @@ const { createInfoEmbed, createErrorEmbed, createSuccessEmbed } = require('../..
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { reloadConfig } = require('../configUtils');
+const { loadConfig } = require('../configUtils');
+
+function formatElapsedTime(minutesElapsed) {
+    const days = Math.floor(minutesElapsed / 1440);
+    const hours = Math.floor((minutesElapsed % 1440) / 60);
+    const minutes = minutesElapsed % 60;
+
+    let result = '';
+    if (days > 0) result = `${days} jours`;
+    else if (hours > 0) result = `${hours}h et ${minutes}min`;
+    else result = `${minutes}min`;
+    return result;
+  }
 
 async function status(interaction){
 
@@ -17,18 +29,6 @@ async function status(interaction){
     let dynosInfo = `- Erreur: \`Impossible de récupérer les dynos d\'Heroku\``;
     let uptimeStatus = '- Erreur: \`Impossible de récupérer le moniteur d\'UptimeRobot.\`';
     let uptimeResponseTime = '';
-
-    function formatElapsedTime(minutesElapsed) {
-      const days = Math.floor(minutesElapsed / 1440);
-      const hours = Math.floor((minutesElapsed % 1440) / 60);
-      const minutes = minutesElapsed % 60;
-
-      let result = '';
-      if (days > 0) result = `${days} jours`;
-      else if (hours > 0) result = `${hours}h et ${minutes}min`;
-      else result = `${minutes}min`;
-      return result;
-    }
 
     try {
       const expectedDynos = ['web', 'worker'];
@@ -101,7 +101,7 @@ async function status(interaction){
 async function reloadConfigFile(interaction){
 
     try {
-        reloadConfig();
+        loadConfig();
   
         const embed = createSuccessEmbed(
           'Rechargement du fichier de configuration',
