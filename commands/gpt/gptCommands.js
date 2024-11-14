@@ -51,7 +51,7 @@ module.exports = {
     switch (subcommand) {
 
       case 'image':
-        if ( process.env.DISCORD_PERSONAL_ID !== interaction.user.id ) {
+        if ( process.env.DISCORD_PERSONAL_ID !== interaction.user.id ) { // Check if the user is the bot owner
           return await interaction.editReply({ embeds: [createErrorEmbed('Vous n\'avez pas la permission d\'utiliser cette commande.')] });
         }
         const imageDescription = interaction.options.getString('image_description');
