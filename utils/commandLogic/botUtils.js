@@ -2,7 +2,6 @@ const { createInfoEmbed, createErrorEmbed, createSuccessEmbed } = require('../..
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { loadConfig } = require('../configUtils');
 
 function formatElapsedTime(minutesElapsed) {
     const days = Math.floor(minutesElapsed / 1440);
@@ -98,31 +97,7 @@ async function status(interaction){
     await interaction.editReply({ content: '', embeds: [embed] });
 }
 
-async function reloadConfigFile(interaction){
-
-    try {
-        loadConfig();
-  
-        const embed = createSuccessEmbed(
-          'Rechargement du fichier de configuration',
-          'Le fichier de configuration a été rechargé avec succès !'
-        );
-  
-        await interaction.reply({ content: '', embeds: [embed], ephemeral: false });
-        
-    } catch (error) {
-        console.error('Erreur lors du rechargement du fichier de configuration :', error);
-  
-        const errorEmbed = createErrorEmbed(
-          'Erreur de rechargement',
-          'Impossible de recharger le fichier de configuration. Veuillez vérifier le fichier.'
-        );
-  
-        await interaction.reply({ content: '', embeds: [errorEmbed], ephemeral: false });
-    }
-}
-
-async function restart(interaction){
+async function restart(){
     const herokuApiKey = process.env.HEROKU_API_KEY;
     const herokuAppName = process.env.HEROKU_APP_NAME;
 
@@ -136,27 +111,16 @@ async function restart(interaction){
         }
       });
 
-      const successEmbed = createSuccessEmbed(
-        'Redémarrage du bot',
-        'Le bot est en cours de redémarrage. Veuillez attendre quelques instants.'
-      );
-
-      await interaction.reply({ embeds: [successEmbed], ephemeral: true });
+      console.log('Bot restarting...');
+      return { success: true, message: 'The bot is restarting.' };
       
     } catch (error) {
-      console.error('Erreur lors du redémarrage des dynos Heroku :', error);
-
-      const errorEmbed = createErrorEmbed(
-        'Erreur de redémarrage',
-        'Impossible de redémarrer le bot. Veuillez vérifier les logs pour plus de détails.'
-      );
-
-      await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+      console.error('Error restarting the bot:', error);
+      return { success: false, message: 'An error occurred while restarting the bot:', error };
     }
 }
 
 module.exports = { 
     status,
-    reloadConfigFile,
     restart
  }
