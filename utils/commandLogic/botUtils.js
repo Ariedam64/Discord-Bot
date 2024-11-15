@@ -111,12 +111,11 @@ async function restart(){
         }
       });
 
-      console.log('Bot restarting...');
-      return { success: true, message: 'The bot is restarting.' };
+      return { success: true, title: 'Redémarrage du bot', message: 'Le bot est en cours de redémarrage...' };
       
     } catch (error) {
       console.error('Error restarting the bot:', error);
-      return { success: false, message: 'An error occurred while restarting the bot:', error };
+      return { success: false, title: 'Redémarrage du bot', message: 'Une erreur est survenue lors du redémarrage du bot:', error };
     }
 }
 

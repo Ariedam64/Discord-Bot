@@ -32,26 +32,23 @@ module.exports = {
       case 'status':
         await status(interaction);
         break;
+
       case 'restart':
-        var embed = null;
-        var result = await restart(interaction);    
+        var result = await restart();    
         if (result.success) {
-          embed = createSuccessEmbed('Redémarrage du bot','Le bot a été redémarré avec succès !');
+          await interaction.reply({ content: '', embeds: [createSuccessEmbed(result.title, result.message)], ephemeral: true });
         } else {
-          embed = createErrorEmbed('Erreur de redémarrage','Impossible de redémarrer le bot.');
+          await interaction.reply({ content: '', embeds: [createErrorEmbed(result.title, result.message)], ephemeral: true });
         }
-        await interaction.reply({ content: '', embeds: [embed], ephemeral: true });
         break;
 
       case 'reload_config':
-        var embed = null;
         var result = await loadConfig();
         if (result.success) {
-          embed = createSuccessEmbed('Rechargement du fichier de configuration','Le fichier de configuration a été rechargé avec succès !');      
+          await interaction.reply({ content: '', embeds: [createSuccessEmbed(result.title, result.message)], ephemeral: false }); 
         } else {
-          embed = createErrorEmbed('Erreur de rechargement','Impossible de recharger le fichier de configuration. Veuillez vérifier le fichier.');
+          await interaction.reply({ content: '', embeds: [createErrorEmbed(result.title, result.message)], ephemeral: false });
         }
-        await interaction.reply({ content: '', embeds: [embed], ephemeral: false });
         break; 
 
     }

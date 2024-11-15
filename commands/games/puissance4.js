@@ -81,7 +81,7 @@ module.exports = {
               const bestMove = game.findBestMove();
               game.placeDisc(bestMove, game.players[1].color);
   
-              // Vérifier si le bot a gagné
+              // Check if the bot wins
               if (game.checkWin()) {
                 game.winner = game.getCurrentPlayer();
                 embed.setDescription(game.displayBoard())

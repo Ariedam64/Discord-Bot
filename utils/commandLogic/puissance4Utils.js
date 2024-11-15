@@ -209,7 +209,7 @@ class Game {
   evaluateBoard() {
     let score = 0;
 
-    // Évaluation horizontale
+    // horizontal evaluation
     for (let row = 0; row < this.board.length; row++) {
         for (let col = 0; col < this.board[0].length - 3; col++) {
             const window = [this.board[row][col], this.board[row][col + 1], this.board[row][col + 2], this.board[row][col + 3]];
@@ -218,7 +218,7 @@ class Game {
         }
     }
 
-    // Évaluation verticale
+    // vertical evaluation
     for (let col = 0; col < this.board[0].length; col++) {
         for (let row = 0; row < this.board.length - 3; row++) {
             const window = [this.board[row][col], this.board[row + 1][col], this.board[row + 2][col], this.board[row + 3][col]];
@@ -227,7 +227,7 @@ class Game {
         }
     }
 
-    // Évaluation diagonale (bas-gauche à haut-droite)
+    // diagonal evaluation (bottom-left to top-right)
     for (let row = 0; row < this.board.length - 3; row++) {
         for (let col = 0; col < this.board[0].length - 3; col++) {
             const window = [this.board[row][col], this.board[row + 1][col + 1], this.board[row + 2][col + 2], this.board[row + 3][col + 3]];
@@ -236,7 +236,7 @@ class Game {
         }
     }
 
-    // Évaluation diagonale (haut-gauche à bas-droite)
+    // diagonal evaluation (top-left to bottom-right)
     for (let row = 3; row < this.board.length; row++) {
         for (let col = 0; col < this.board[0].length - 3; col++) {
             const window = [this.board[row][col], this.board[row - 1][col + 1], this.board[row - 2][col + 2], this.board[row - 3][col + 3]];
@@ -276,7 +276,7 @@ evaluateWindow(window, piece) {
   return score;
 }
 
-  // Minimax avec alpha-beta pruning
+  // Minimax algorithm with alpha-beta pruning
   minimax(depth, isMaximizing, alpha, beta) {
 
     if (depth === 0 || this.isTerminalNode()) {
