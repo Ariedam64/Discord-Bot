@@ -11,6 +11,5 @@ module.exports = (client) => {
   });
 
   client.player.extractors.register(YoutubeiExtractor, {
-    authentication: process.env.OAUTH_TOKEN
   });
 };
