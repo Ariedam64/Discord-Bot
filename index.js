@@ -25,8 +25,8 @@ const client = new Client({
   await sequelize.sync({ force: false });
   await commandHandler(client);
   eventHandler(client);
-  playerInitializer(client);
   interactionHandler(client);
+  playerInitializer(client);
 
   client.login(process.env.DISCORD_TOKEN);
 })();
