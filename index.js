@@ -1,8 +1,8 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const commandHandler = require('./handlers/commandHandler');
 const eventHandler = require('./handlers/eventHandler');
-const playerHandler = require('./handlers/playerHandler');
 const interactionHandler = require('./handlers/interactionHandler');
+const playerInitializer = require('./utils/playerInitializer');
 
 const { loadConfig } = require('./utils/configUtils');
 const { connectDB, sequelize } = require('./stockage/database.js');
@@ -25,7 +25,7 @@ const client = new Client({
   await sequelize.sync({ force: false });
   await commandHandler(client);
   eventHandler(client);
-  playerHandler(client);
+  playerInitializer(client);
   interactionHandler(client);
 
   client.login(process.env.DISCORD_TOKEN);
