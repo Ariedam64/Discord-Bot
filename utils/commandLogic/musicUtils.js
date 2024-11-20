@@ -290,7 +290,7 @@ class MusicPlayer {
     async startPlaying(url, interaction) {
 
         if (!this.textChannel) {
-            const errorEmbed = createErrorEmbed(`Impossible de trouver le salon de texte ${this.musicChannel}.`);
+            const errorEmbed = createErrorEmbed(`Impossible de trouver le salon textuel musical: ${this.musicChannel}.`);
             return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
         if (!this.voiceChannel) {

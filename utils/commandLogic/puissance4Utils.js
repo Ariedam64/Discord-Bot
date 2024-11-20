@@ -1,4 +1,4 @@
-
+const { EmbedBuilder } = require('discord.js');
 
 RED_DISC = "‎ ‎ ‎ ‎🔴 ‎ ‎ ‎ ‎ ‎ "
 YELLOW_DISC = "‎ ‎ ‎ ‎🟡 ‎ ‎ ‎ ‎ ‎ "
@@ -33,6 +33,7 @@ class Game {
       this.winner = null;
       this.lastPlayer = null;
       this.winningPositions = [];
+      this.reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'];
     }
   
     createBoard() {
@@ -333,6 +334,20 @@ evaluateWindow(window, piece) {
     }
     return bestMove;
   }
+
+  drawBoardEmbed() {
+    const player1Username = this.players[0].user.username;
+    const player2Username = this.players[1].user.username;
+    const winner = this.winner
+    const winnerUsername = this.winner ? this.winner.user.username : null;
+    const currentPlayer = this.getCurrentPlayer()
+
+    return new EmbedBuilder()
+    .setTitle(`Puissance 4: ${player1Username} VS ${player2Username}`)
+    .setDescription(this.displayBoard())
+    .setFooter({ text: winner ? `${winnerUsername} a gagné !` : `${currentPlayer.color.replace('‎ ', '')} C'est à ${currentPlayer.user.username} de jouer.` });
+  }
+
 }
 
   module.exports = {
