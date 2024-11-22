@@ -41,39 +41,37 @@ const fetchFreeGames = async () => {
 };
 
 const sendGamesToChannel = async (client, channelName) => {
+    for (const guild of client.guilds.cache.values()) {
+        const channel = guild.channels.cache.find(channel => channel.name === channelName);
 
-    const channel = client.channels.cache.find(channel => channel.name === channelName);
+        if (!channel) {
+            console.log(`Channel "${channelName}" not found`);
+            continue;
+        }
 
-    if (!channel) {
-        console.log(`Channel "${channelName}" not found`);
-        return;
-    }
+        // Check if the channel has a message
+        const messages = await channel.messages.fetch({ limit: 1 });
+        if (messages.size > 0) {
+            // Check if the last message is the same as the last game
+            const lastMessageContent = messages.first()?.embeds[0]?.title;
+            const lastGameContent = nextGames[nextGames.length - 1].title;
+            if (lastMessageContent === lastGameContent) {
+                // No new games
+                continue;
+            }
+        }
 
-    //check if the channel as a message
-    const messages = await channel.messages.fetch({ limit: 1 });
-    if (messages.size > 0) {
+        for (const game of currentGames) {
+            const embed = createGameEmbed(game, false);
+            await channel.send({ embeds: [embed] });
+        }
 
-        //Check if the last message is the same as the last game
-        const lastMessage = await channel.messages.fetch({ limit: 1 });
-        const lastMessageContent = lastMessage.first()?.embeds[0]?.title;
-        const lastGameContent = nextGames[nextGames.length-1].title;
-        if (lastMessageContent === lastGameContent) {
-            //No new games
-            return;
+        for (const game of nextGames) {
+            const embed = createGameEmbed(game, true);
+            await channel.send({ embeds: [embed] });
         }
     }
-    
-
-    for (const game of currentGames) {
-        const embed = createGameEmbed(game, false);
-        await channel.send({ embeds: [embed] });
-    }
-
-    for (const game of nextGames) {
-        const embed = createGameEmbed(game, true);
-        await channel.send({ embeds: [embed] });
-    }
-}
+};
 
 const scheduleFreeGamesNotification = async (client) => {
 
