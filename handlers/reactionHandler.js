@@ -3,6 +3,8 @@ async function handlePuissance4Reaction(reaction, user, game, message, bot) {
   const reactions = game.reactions;
   const col = reactions.indexOf(reaction.emoji.name);
 
+  console.log("ici")
+
   reaction.users.remove(user);
 
   if (user.id !== game.getCurrentPlayer().user.id) { return; }
